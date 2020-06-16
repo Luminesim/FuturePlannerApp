@@ -55,7 +55,8 @@ dependencies {
 
     def room_version = "2.2.5"
     implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version" // For Kotlin use kapt instead of annotationProcessor
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    // For Kotlin use kapt instead of annotationProcessor
     implementation "androidx.room:room-rxjava2:$room_version"
     implementation "androidx.room:room-guava:$room_version"
 
@@ -64,5 +65,9 @@ dependencies {
 
     // From Indes
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+
+    // To parse LocalDate from JSON:
+    //https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
 
 }

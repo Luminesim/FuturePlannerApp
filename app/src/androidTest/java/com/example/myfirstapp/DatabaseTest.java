@@ -13,6 +13,9 @@ import com.example.myfirstapp.db.EntityFact;
 import com.example.myfirstapp.db.EntityFactDetail;
 import com.example.myfirstapp.db.EntityWithFacts;
 import com.example.myfirstapp.monad.MonadData;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -50,7 +54,7 @@ public class DatabaseTest {
     }
 
     @Test
-    public void removeEntityWithFacts_shouldRemoveFactsAndDetails() {
+    public void removeEntityWithFacts_shouldRemoveFactsAndDetails() throws Throwable {
 
         // Create test user
         Entity toAdd = Entity.builder().name("User").build();
@@ -71,7 +75,7 @@ public class DatabaseTest {
         assertFalse("Expected entity facts in the database.", dao.getEntityFactsNow().isEmpty());
 
         // Remove entity.
-        dao.delete(dao.getEntity(userId).entity);
+        dao.delete(dao.getEntity(userId).getEntity());
 
         // Ensure there is no entity, entity facts, nor fact details.
         assertTrue("Expected no entities to remain.", dao.getEntitiesNow().isEmpty());
@@ -100,15 +104,15 @@ public class DatabaseTest {
 
         // Pull it all out and see if everything was retained.
         EntityWithFacts result = dao.getEntity(userId);
-        assertEquals("Expected retention of user name.", "User", result.entity.getName());
-        assertEquals("Expected correct number of facts.", 1, result.facts.size());
-        assertEquals("Expected retention of fact name.", "Work", result.facts.get(0).fact.getName());
-        assertEquals("Expected retention of fact category.", Category.Income, result.facts.get(0).fact.getCategory());
-        assertEquals("Expected retention of fact details.", 2, result.facts.get(0).details.size());
-        assertEquals("Expected retention of fact detail monad parameter (step 0).", 120_000.00, (double) MonadData.fromJson(result.facts.get(0).details.get(0).getMonadJson()).getParameters()[0], DELTA);
-        assertEquals("Expected retention of fact detail monad ID (step 0).", "IdMoneyAmount", MonadData.fromJson(result.facts.get(0).details.get(0).getMonadJson()).getMonadId());
-        assertEquals("Expected retention of fact detail monad parameter (step 1.", 0, MonadData.fromJson(result.facts.get(0).details.get(1).getMonadJson()).getParameters().length);
-        assertEquals("Expected retention of fact detail monad ID (step 1).", "IdPerYear", MonadData.fromJson(result.facts.get(0).details.get(1).getMonadJson()).getMonadId());
+        assertEquals("Expected retention of user name.", "User", result.getEntity().getName());
+        assertEquals("Expected correct number of facts.", 1, result.getFacts().size());
+        assertEquals("Expected retention of fact name.", "Work", result.getFacts().get(0).getFact().getName());
+        assertEquals("Expected retention of fact category.", Category.Income, result.getFacts().get(0).getFact().getCategory());
+        assertEquals("Expected retention of fact details.", 2, result.getFacts().get(0).getDetails().size());
+        assertEquals("Expected retention of fact detail monad parameter (step 0).", 120_000.00, Double.valueOf(MonadData.fromJson(result.getFacts().get(0).getDetails().get(0).getMonadJson()).getParameters()[0]), DELTA);
+        assertEquals("Expected retention of fact detail monad ID (step 0).", "IdMoneyAmount", MonadData.fromJson(result.getFacts().get(0).getDetails().get(0).getMonadJson()).getMonadId());
+        assertEquals("Expected retention of fact detail monad parameter (step 1.", 0, MonadData.fromJson(result.getFacts().get(0).getDetails().get(1).getMonadJson()).getParameters().length);
+        assertEquals("Expected retention of fact detail monad ID (step 1).", "IdPerYear", MonadData.fromJson(result.getFacts().get(0).getDetails().get(1).getMonadJson()).getMonadId());
     }
 
     /**
@@ -135,17 +139,17 @@ public class DatabaseTest {
         EntityWithFacts preEdit = dao.getEntity(userId);
 
         // Make updates.
-        preEdit.facts.get(0).fact.setName("Gigs");
-        preEdit.facts.get(0).details.get(0).setMonadJson((new MonadData("IdMoneyAmount", 60_000.00)).toJson());
-        dao.insert(preEdit.facts.get(0).fact);
-        dao.insert(preEdit.facts.get(0).details.get(0));
+        preEdit.getFacts().get(0).getFact().setName("Gigs");
+        preEdit.getFacts().get(0).getDetails().get(0).setMonadJson((new MonadData("IdMoneyAmount", 60_000.00)).toJson());
+        dao.insert(preEdit.getFacts().get(0).getFact());
+        dao.insert(preEdit.getFacts().get(0).getDetails().get(0));
 
         // Pull it out again
         EntityWithFacts postEdit = dao.getEntity(userId);
-        assertEquals("Expected fact name update.", "Gigs", postEdit.facts.get(0).fact.getName());
-        assertEquals("Expected fact detail monad parameter update (step 0).", 60_000.00, (double) MonadData.fromJson(postEdit.facts.get(0).details.get(0).getMonadJson()).getParameters()[0], DELTA);
-        assertEquals("Expected retention of fact detail monad ID (step 0).", "IdMoneyAmount", MonadData.fromJson(postEdit.facts.get(0).details.get(0).getMonadJson()).getMonadId());
-        assertEquals("Expected no new fact details.", 2, postEdit.facts.get(0).details.size());
+        assertEquals("Expected fact name update.", "Gigs", postEdit.getFacts().get(0).getFact().getName());
+        assertEquals("Expected fact detail monad parameter update (step 0).", 60_000.00, Double.valueOf(MonadData.fromJson(postEdit.getFacts().get(0).getDetails().get(0).getMonadJson()).getParameters()[0]), DELTA);
+        assertEquals("Expected retention of fact detail monad ID (step 0).", "IdMoneyAmount", MonadData.fromJson(postEdit.getFacts().get(0).getDetails().get(0).getMonadJson()).getMonadId());
+        assertEquals("Expected no new fact details.", 2, postEdit.getFacts().get(0).getDetails().size());
     }
 
     /**
@@ -160,35 +164,44 @@ public class DatabaseTest {
 
         // Ensure user is recorded.
         EntityWithFacts result = dao.getEntity(userId);
-        assertEquals("Expected entity with correct ID.", userId, result.entity.getUid());
-        assertTrue("Expected entity with no facts.", result.facts.isEmpty());
+        assertEquals("Expected entity with correct ID.", userId, result.getEntity().getUid());
+        assertTrue("Expected entity with no facts.", result.getFacts().isEmpty());
     }
-//        EntityFact incomeWork = EntityFact
-//                .builder()
-//                .category(Category.Income)
-//                .entityUid(user.getUid())
-//                .name("Work")
-//                .build();
-//        List<EntityFactDetail> details = new LinkedList<>();
-//        details.add(EntityFactDetail
-//                .builder()
-//                .entityFactId(incomeWork.getUid())
-//                .stepNumber(0)
-//                .monadJson((new MonadData("IdMoneyAmount", 100_000.0)).toJson())
-//                .build());
-//        details.add(EntityFactDetail
-//                .builder()
-//                .entityFactId(incomeWork.getUid())
-//                .stepNumber(1)
-//                .monadJson((new MonadData("IdPerYear")).toJson())
-//                .build());
-//        EntityWithFacts toAdd = new EntityWithFacts(
-//                user,
-//                Arrays.asList(new EntityFactWithDetails(incomeWork, details))
-//        );
-//        dao.insert(toAdd);
-//
-//        // Get the data back.
-//        EntityWithFacts result = dao.getEntity()
+
+    /**
+     * Ensures that we can record an entity with a date-related fact.
+     * This is often a source of failure, hence ensuring this works.
+     */
+    @Test
+    public void addDateFact_shouldPersist() throws Throwable {
+
+        // Create test user
+        Entity toAdd = Entity.builder().name("User").build();
+        long userId = dao.insert(toAdd);
+
+        // Create test facts.
+        EntityFact fact1 = EntityFact.builder().category(Category.Income).entityUid(userId).name("Work").build();
+        long fact1Uid = dao.insert(fact1);
+
+        // Create test fact details.
+        EntityFactDetail fact1Step0 = EntityFactDetail.builder().entityFactUid(fact1Uid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 120_000.00)).toJson()).build();
+        EntityFactDetail fact1Step1 = EntityFactDetail.builder().entityFactUid(fact1Uid).stepNumber(0).monadJson((new MonadData("IdPerYear")).toJson()).build();
+        LocalDate dt = LocalDate.now().withYear(2020).withMonth(6).withDayOfMonth(16);
+        EntityFactDetail fact1Step2 = EntityFactDetail.builder().entityFactUid(fact1Uid).stepNumber(0).monadJson((new MonadData("IdStartDate", dt)).toJson()).build();
+        dao.insert(fact1Step0);
+        dao.insert(fact1Step1);
+        dao.insert(fact1Step2);
+
+        // Pull out the date data.
+        EntityWithFacts result = dao.getEntity(userId);
+        MonadData data = MonadData.fromJson(result.getFacts().get(0).getDetails().get(2).getMonadJson());
+        ObjectMapper out = new ObjectMapper();
+        out.registerModule(new JavaTimeModule());
+        out.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        assertEquals("Expected retention of fact detail monad parameter (step 2).", 1, data.getParameters().length);
+        assertEquals("Expected retention of fact detail monad ID (step 2).", "IdStartDate", data.getMonadId());
+        LocalDate resultDt = out.readValue(data.getParameters()[0], LocalDate.class);
+        assertEquals("Dates should be equal.", dt, resultDt);
+    }
 
 }

@@ -1,13 +1,9 @@
 package com.example.myfirstapp.db;
 
-import android.app.Application;
 import android.content.Context;
 
 import androidx.lifecycle.LiveData;
 
-import com.example.myfirstapp.R;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -67,9 +63,10 @@ public class EntityRepository {
     /**
      * Updates all information associated with the fact (or creates a new one).
      * All prior details (if any) are dumped and replaced.
+     * Details will be given the fact's ID, if updated.
      * @pre Entity must exist.
      */
-    public void updateFact(@NonNull long entityUid, @NonNull EntityFact fact, @NonNull List<EntityFactDetail> details) {
+    public void updateFact(long entityUid, @NonNull EntityFact fact, @NonNull List<EntityFactDetail> details, Runnable onSaved) {
 
         EntityDatabase.databaseWriteExecutor.execute(() -> {
             // Get the entity. Ensure it exists.
@@ -80,6 +77,7 @@ public class EntityRepository {
 
             // Update or get the new fact.
             long factUid = mEntityDao.insert(fact);
+            details.forEach(detail -> detail.setEntityFactUid(factUid));
 
             // Delete all associated fact details as we'll be replacing them, then
             // ensure the entity is in fact updated.
@@ -87,6 +85,15 @@ public class EntityRepository {
 
             // Add all details.
             details.forEach(mEntityDao::insert);
+
+            // Callback.
+            onSaved.run();
+        });
+    }
+
+    public void deleteAll() {
+        EntityDatabase.databaseWriteExecutor.execute(() -> {
+            mEntityDao.deleteEntities();
         });
     }
 }

@@ -3,34 +3,27 @@ package com.example.myfirstapp.monad;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-
-import com.example.myfirstapp.input.AlertDialogFragment;
 import com.example.myfirstapp.R;
-import com.example.myfirstapp.input.CalendarInputFragment;
-import com.example.myfirstapp.input.NumericAmountInputFragment;
+import com.example.myfirstapp.db.EntityFactDetail;
+import com.example.myfirstapp.input.AlertDialogFragment;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.time.LocalDate;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 import ca.anthrodynamics.indes.lang.ComputableMonad;
 import ca.anthrodynamics.indes.lang.Monad;
-import ca.anthrodynamics.indes.lang.MoneyMonad;
-import ca.anthrodynamics.indes.lang.StartingMonad;
-import ca.anthrodynamics.indes.lang.ToRateMonad;
+import lombok.NonNull;
 
 /**
  * Allows monads to be navigated.
@@ -40,7 +33,7 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
     private List<String> mCurrentPredictiveViews = new ArrayList<>();
     private List<Monad> mCurrentOptions = new ArrayList<>();
     private Monad mLastSelection = null;
-    private MonadDataset mData = new MonadDataset();
+    private MonadDatabase mData;
 
     /**
      * Goes back to starting monads.
@@ -75,34 +68,7 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
     public MonadRepoAdapter(AppCompatActivity c, Callback callback) {
 
         this.mCallback = callback;
-
-        // Create the available monads.
-        register(
-                "IdMoneyAmount",
-                new MoneyMonad(c.getString(R.string.monad_money_amount)),
-                "$ %s",
-                c.getString(R.string.monad_money_view_text),
-                Optional.of(() -> new NumericAmountInputFragment()),
-                //Optional.of(R.layout.fragment_numeric_amount_input),
-                (template, inputs) ->
-                        template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.numberEditTextMoneyMonad)).getText().toString()))
-        );
-        register("IdPerYear", new ToRateMonad(12), c.getString(R.string.monad_per_year_view_text), c.getString(R.string.monad_per_year_view_text));
-        register("IdPerMonth", new ToRateMonad(1), c.getString(R.string.monad_per_month_view_text), c.getString(R.string.monad_per_month_view_text));
-        register("IdPerDay", new ToRateMonad(1 / 30.0), c.getString(R.string.monad_per_day_view_text), c.getString(R.string.monad_per_day_view_text));
-        register(
-                "IdStarting",
-                new StartingMonad("Date"),
-                "starting %s",
-                c.getString(R.string.monad_starting_view_text),
-                Optional.of(() -> new CalendarInputFragment()),
-//                Optional.of(R.layout.fragment_calendar_input),
-                (template, view) -> {
-                    LocalDate ld = LocalDate.ofEpochDay(((CalendarView) view.findViewById(R.id.datePicker)).getDate() / (24 * 60 * 60 * 1000));
-                    return template.withParameters(ld);
-                }
-        );
-
+        this.mData = MonadDatabase.getDatabase(c);
         updateMonadList();
     }
 
@@ -124,22 +90,6 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
         notifyDataSetChanged();
     }
 
-    /**
-     * Registers a monad for this view.
-     *
-     * @param monad
-     * @param formatter
-     * @param predictiveView
-     * @param inputView
-     */
-    private void register(@NonNull String id, @NonNull Monad monad, @NonNull String formatter, @NonNull String predictiveView, @NonNull Optional<Supplier<AlertDialogFragment>> inputView, @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
-        mData.add(id, monad, formatter, predictiveView, inputView, inputProcessor);
-    }
-
-    private void register(@NonNull String id, @NonNull Monad monad, @NonNull String formatter, @NonNull String predictiveView) {
-        register(id, monad, formatter, predictiveView, Optional.empty(), (template, view) -> template.withParameters());
-    }
-
     // Create new views (invoked by the layout manager)
     @Override
     public PredictiveTextHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -153,14 +103,12 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
             // Determine the selection.
             // Show an alert to get input, if requested.
             if (mData.getInputView(vh.monad).isPresent()) {
-//                // If the fragment is there, build the alert and listen for the "OK"
+                // If the fragment is there, build the alert and listen for the "OK"
                 FragmentManager fm = ((AppCompatActivity) parent.getContext()).getSupportFragmentManager();
                 AlertDialogFragment f = mData.getInputView(vh.monad).get().get();
                 f.setPositiveButtonCallback(view -> {
-                    mLastSelection = vh.monad;
                     ComputableMonad result = mData.processInput(vh.monad, view);
-                    mCallback.callback(mData.format(vh.monad, result.getParameterValues()), mData.getId(vh.monad), result.getParameterValues());
-                    updateMonadList();
+                    triggerCallbackAndUpdateMonadList(mData.format(vh.monad, result.getParameterValues()), mData.getId(vh.monad), result.getParameterValues());
                 });
                 f.show(fm, "Input");
             }
@@ -171,13 +119,57 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
 
                 // If a result was found, then update to the next monad.
                 if (result != null) {
-                    mLastSelection = vh.monad;
-                    mCallback.callback(mData.format(vh.monad, result.getParameterValues()), mData.getId(vh.monad), result.getParameterValues());
-                    updateMonadList();
+                    triggerCallbackAndUpdateMonadList(mData.format(vh.monad, result.getParameterValues()), mData.getId(vh.monad), result.getParameterValues());
                 }
             }
         });
         return vh;
+    }
+
+    /**
+     * Allows the callback to be handled by UI events or programmatically.
+     * @param summaryText
+     * @param monadId
+     * @param parameters
+     */
+    public void triggerCallbackAndUpdateMonadList(@NonNull String summaryText, @NonNull String monadId, @NonNull Object[] parameters) {
+        mLastSelection = mData.getMonadById(monadId);
+
+        // Convert all parameters to those that the monad needs.
+        ObjectMapper fixer = new ObjectMapper();
+        fixer.registerModule(new JavaTimeModule());
+        fixer.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        Object[] params = new Object[parameters.length];
+        try {
+            for (int i = 0; i < parameters.length; i += 1) {
+                params[i] = fixer.readValue("\""+parameters[i]+"\"", mLastSelection.getParameterTypes()[i]);
+            }
+        }
+        catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+        mCallback.callback(summaryText, monadId, params);
+        updateMonadList();
+    }
+
+    /**
+     * Allows the callback to be handled by UI events or programmatically.
+     */
+    public void triggerCallbackAndUpdateMonadList(@NonNull EntityFactDetail detail) {
+
+        try {
+            MonadData data = MonadData.fromJson(detail.getMonadJson());
+            mLastSelection = mData.getMonadById(data.getMonadId());
+            mCallback.callback(
+                    mData.format(data),
+                    data.getMonadId(),
+                    data.getParameters(mLastSelection.getParameterTypes(), false)
+            );
+            updateMonadList();
+        }
+        catch (IOException t) {
+            throw new RuntimeException(t);
+        }
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -187,7 +179,6 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
         // - replace the contents of the view with that element
         holder.text.setText(mCurrentPredictiveViews.get(position));
         holder.monad = mCurrentOptions.get(position);
-
     }
 
     // Return the size of your dataset (invoked by the layout manager)

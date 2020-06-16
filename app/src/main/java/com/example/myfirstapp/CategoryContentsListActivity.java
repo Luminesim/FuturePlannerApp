@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.example.myfirstapp.db.EntityFact;
 import com.example.myfirstapp.db.EntityRepository;
+import com.example.myfirstapp.monad.MonadDatabase;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.annotation.Nullable;
@@ -15,6 +16,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import ca.anthrodynamics.indes.lang.MonadRepo;
+
 public class CategoryContentsListActivity extends AppCompatActivity {
 
     public static final String LIST_SELECTION = "LIST_SELECTION";
@@ -22,6 +25,7 @@ public class CategoryContentsListActivity extends AppCompatActivity {
     private static final int RC_ADD = 1;
     private static final long UID_DNE = 0l;
     private int mCategoryTextId;
+    private MonadDatabase mData;
     private LinearLayout mList;
 
     @Override
@@ -30,6 +34,7 @@ public class CategoryContentsListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_category_contents_list);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mData = MonadDatabase.getDatabase(this);
 
         mCategoryTextId = getIntent().getIntExtra(LIST_TITLE, -1);
         if (mCategoryTextId == -1) {
@@ -56,14 +61,18 @@ public class CategoryContentsListActivity extends AppCompatActivity {
                     ewf.getFacts().forEach(ef -> {
                         EntityFact fact = ef.getFact();
                         View toAdd = getLayoutInflater().inflate(R.layout.monad_selection_layout, null);
-                        ((TextView) toAdd.findViewById(R.id.label)).setText(String.format(
-                                "%s",
-                                fact.getName()
-                        ));
+
+                        // Build up the string to display.
+                        StringBuilder text = new StringBuilder();
+                        text.append(fact.getName()).append(": ");
+                        ef.getDetails().forEach(detail -> text.append(mData.getFormattedStringFromJson(detail.getMonadJson())).append(" "));
+                        ((TextView) toAdd.findViewById(R.id.label)).setText(text.toString().trim());
+
+                        // If the fact is clicked, update it.
                         toAdd.setOnClickListener(l -> {
                             updateFact(fact.getUid());
                         });
-                        mList.addView(toAdd);
+                        runOnUiThread(() -> mList.addView(toAdd));
                     });
 
 
@@ -83,8 +92,9 @@ public class CategoryContentsListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Update the list if needed.
+        runOnUiThread(this::updateList);
         if (resultCode == RESULT_OK) {
-            runOnUiThread(this::updateList);
+//            runOnUiThread(this::updateList);
         }
 
 //        // create a new view

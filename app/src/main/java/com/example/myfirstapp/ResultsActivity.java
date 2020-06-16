@@ -52,10 +52,15 @@ public class ResultsActivity extends AppCompatActivity {
     void tryInitializeDatabaseAndFirstEntity() {
 
 
+
         // TODO FIXME: This will introduce a race condition if the user presses Income/Expense before this result returns.
         mEntities = new EntityRepository(getApplicationContext());
+
+//        mEntities.deleteAll();
+
         LiveData<List<EntityWithFacts>> entities = mEntities.getEntities();
         entities.observe(this, list -> {
+
             // No entities? Create a default one.
             if (list.isEmpty()) {
                 Log.i("Setup", "No entities. Adding a user.");

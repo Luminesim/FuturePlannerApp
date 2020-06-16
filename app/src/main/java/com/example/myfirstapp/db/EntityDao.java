@@ -78,4 +78,8 @@ public interface EntityDao {
 
     @Query("DELETE FROM entity_fact_details WHERE entity_fact_uid == (:fact_uid)")
     void deleteEntityFactDetails(long fact_uid);
+
+    default void deleteEntities() {
+        getEntitiesNow().forEach(e -> delete(e.getEntity()));
+    }
 }

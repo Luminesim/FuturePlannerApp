@@ -35,50 +35,6 @@ public abstract class EntityDatabase extends RoomDatabase {
                             context.getApplicationContext(),
                             EntityDatabase.class,
                             "entity_database")
-
-//                            // TODO FIXME TEMP: THIS IS TO HELP POPULATE WITH BASIC DATA.
-//                            .addCallback(new RoomDatabase.Callback() {
-//                                @Override
-//                                public void onOpen(@NonNull SupportSQLiteDatabase db) {
-//                                    super.onOpen(db);
-//
-//                                    if (1 == 1) throw new RuntimeException("Not implemented");
-//                                    // If you want to keep data through app restarts,
-//                                    // comment out the following block
-//                                    databaseWriteExecutor.execute(() -> {
-//                                        // Populate the database in the background.
-//                                        // If you want to start with more words, just add them.
-//                                        EntityDao dao = INSTANCE.entityDao();
-//                                        dao.deleteAll();
-//
-//                                        Entity user = Entity.builder().name("User").build();
-//                                        EntityFact incomeWork = EntityFact
-//                                                .builder()
-//                                                .category(Category.Income.name())
-//                                                .entityUid(user.getUid())
-//                                                .name("Work")
-//                                                .build();
-//                                        List<EntityFactDetail> details = new LinkedList<>();
-//                                        details.add(EntityFactDetail
-//                                                .builder()
-//                                                .entityFactId(incomeWork.getUid())
-//                                                .stepNumber(0)
-//                                                .monadJson((new MonadData("IdMoneyAmount", 100_000.0)).toJson())
-//                                                .build());
-//                                        details.add(EntityFactDetail
-//                                                .builder()
-//                                                .entityFactId(incomeWork.getUid())
-//                                                .stepNumber(1)
-//                                                .monadJson((new MonadData("IdPerYear")).toJson())
-//                                                .build());
-//                                        EntityWithFacts toAdd = new EntityWithFacts(
-//                                                user,
-//                                                Arrays.asList(new EntityFactWithDetails(incomeWork, details))
-//                                        );
-//                                        dao.insert(toAdd);
-//                                    });
-//                                }
-//                            })
                             .build();
                 }
             }

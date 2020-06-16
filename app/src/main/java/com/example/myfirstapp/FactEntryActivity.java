@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import ca.anthrodynamics.indes.lang.Monad;
+
 public class FactEntryActivity extends AppCompatActivity {
     public static final String EXTRA_NAME = "com.exmaple.myfirstapp.NAME";
     public static final String EXTRA_FORMATTED_TEXT = "com.exmaple.myfirstapp.FORMATTED_TEXT";
@@ -35,7 +37,7 @@ public class FactEntryActivity extends AppCompatActivity {
     private EntityRepository mEntities;
     private long mEntityUid;
     private long mFactUid;
-    private Category category;
+    private Category mCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,18 +47,6 @@ public class FactEntryActivity extends AppCompatActivity {
         // Data setup.
         recyclerView = (RecyclerView) findViewById(R.id.predictive_option_list);
         mEntities = new EntityRepository(getApplicationContext());
-
-        // Get the entity and fact.
-        mEntityUid = getIntent().getLongExtra(getString(R.string.extra_entity_uid), NO_ID);
-        mFactUid = getIntent().getLongExtra(getString(R.string.extra_fact_uid), NO_ID);
-        category = Category.valueOf(getIntent().getStringExtra(EXTRA_DATA_CATEGORY));
-
-        // If the fact exists, enter the data into the form.
-        if (mFactUid != NO_ID) {
-            mEntities.getFact(mFactUid, data -> {
-                ((EditText)findViewById(R.id.textFactName)).setText(data.getFact().getName());
-            });
-        }
 
 
         // use this setting to improve performance if you know that changes
@@ -72,11 +62,38 @@ public class FactEntryActivity extends AppCompatActivity {
         mAdapter = new MonadRepoAdapter(
                 this,
                 (formattedString, monadId, parameters) -> {
-                    editText.append(" " + formattedString );
-                    MonadData next = new MonadData(monadId, parameters);
-                    data.add(next);
+                    editText.append(" " + formattedString);
+                    try {
+                        findViewById(R.id.buttonSave).setEnabled(true);
+                        MonadData next = new MonadData(monadId, parameters);
+                        data.add(next);
+                    } catch (Throwable t) {
+                        throw new RuntimeException(t);
+                    }
                 });
         recyclerView.setAdapter(mAdapter);
+
+        // Get the entity and fact.
+        mEntityUid = getIntent().getLongExtra(getString(R.string.extra_entity_uid), NO_ID);
+        mFactUid = getIntent().getLongExtra(getString(R.string.extra_fact_uid), NO_ID);
+        mCategory = Category.valueOf(getIntent().getStringExtra(EXTRA_DATA_CATEGORY));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // If the fact exists, enter the data into the form.
+        if (mFactUid != NO_ID) {
+            mEntities.getFact(mFactUid, data -> {
+                runOnUiThread(() -> ((EditText) findViewById(R.id.textFactName)).setText(data.getFact().getName()));
+
+                // Enter the details one by one.
+                data.getDetails().forEach(detail -> {
+                    runOnUiThread(() -> mAdapter.triggerCallbackAndUpdateMonadList(detail));
+                });
+            });
+        }
     }
 
     /**
@@ -89,7 +106,7 @@ public class FactEntryActivity extends AppCompatActivity {
         findViewById(R.id.buttonClear).setEnabled(false);
 
         // Do the update.
-        String name = ((EditText)findViewById(R.id.textFactName)).getText().toString();
+        String name = ((EditText) findViewById(R.id.textFactName)).getText().toString();
         mEntities.getEntity(mEntityUid, current -> {
 
             // Find the fact we're updating. If it doesn't exist, create one.
@@ -101,7 +118,7 @@ public class FactEntryActivity extends AppCompatActivity {
                         return f.getFact().getUid() == mFactUid;
                     })
                     .findFirst()
-                    .orElseGet(() -> new EntityFactWithDetails(EntityFact.builder().category(category).entityUid(mEntityUid).name(name).build(), new ArrayList<>()))
+                    .orElseGet(() -> new EntityFactWithDetails(EntityFact.builder().category(mCategory).entityUid(mEntityUid).name(name).build(), new ArrayList<>()))
                     .getFact();
 
             // Since we might need to update the fact's name and we may need to get an ID, do so.
@@ -113,23 +130,21 @@ public class FactEntryActivity extends AppCompatActivity {
                 EntityFactDetail detail = EntityFactDetail
                         .builder()
                         .stepNumber(i)
-                        .entityFactUid(mFactUid)
                         .monadJson(data.get(i).toJson())
                         .build();
                 details.add(detail);
             }
 
             // Submit the update.
-            mEntities.updateFact(mEntityUid, fact, details);
-
-            // All done.
-            Intent out = new Intent();
-            ObjectMapper om = new ObjectMapper();
-            EditText editText = findViewById(R.id.commandEditText);
-            out.putExtra(EXTRA_FORMATTED_TEXT, editText.getText().toString());
-            out.putExtra(EXTRA_NAME, name);
-            setResult(RESULT_OK, out);
-            finish();
+            mEntities.updateFact(mEntityUid, fact, details, () -> {
+                // All done.
+                Intent out = new Intent();
+                EditText editText = findViewById(R.id.commandEditText);
+                out.putExtra(EXTRA_FORMATTED_TEXT, editText.getText().toString());
+                out.putExtra(EXTRA_NAME, name);
+                setResult(RESULT_OK, out);
+                finish();
+            });
         });
     }
 
@@ -139,6 +154,8 @@ public class FactEntryActivity extends AppCompatActivity {
     public void clearSelection(View view) {
         EditText editText = (EditText) findViewById(R.id.commandEditText);
         editText.setText("");
+        data.clear();
+        findViewById(R.id.buttonSave).setEnabled(false);
         mAdapter.restartSelection();
     }
 }
