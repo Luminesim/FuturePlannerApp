@@ -58,22 +58,26 @@ public class CategoryContentsListActivity extends AppCompatActivity {
         repo.getEntity(
                 getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0),
                 ewf -> {
-                    ewf.getFacts().forEach(ef -> {
-                        EntityFact fact = ef.getFact();
-                        View toAdd = getLayoutInflater().inflate(R.layout.monad_selection_layout, null);
+                    // Show facts for this category.
+                    ewf.getFacts()
+                            .stream()
+                            .filter(ef -> ef.getFact().getCategory().name().equals(getString(mCategoryTextId)))
+                            .forEach(ef -> {
+                                EntityFact fact = ef.getFact();
+                                View toAdd = getLayoutInflater().inflate(R.layout.monad_selection_layout, null);
 
-                        // Build up the string to display.
-                        StringBuilder text = new StringBuilder();
-                        text.append(fact.getName()).append(": ");
-                        ef.getDetails().forEach(detail -> text.append(mData.getFormattedStringFromJson(detail.getMonadJson())).append(" "));
-                        ((TextView) toAdd.findViewById(R.id.label)).setText(text.toString().trim());
+                                // Build up the string to display.
+                                StringBuilder text = new StringBuilder();
+                                text.append(fact.getName()).append(": ");
+                                ef.getDetails().forEach(detail -> text.append(mData.getFormattedStringFromJson(detail.getMonadJson())).append(" "));
+                                ((TextView) toAdd.findViewById(R.id.label)).setText(text.toString().trim());
 
-                        // If the fact is clicked, update it.
-                        toAdd.setOnClickListener(l -> {
-                            updateFact(fact.getUid());
-                        });
-                        runOnUiThread(() -> mList.addView(toAdd));
-                    });
+                                // If the fact is clicked, update it.
+                                toAdd.setOnClickListener(l -> {
+                                    updateFact(fact.getUid());
+                                });
+                                runOnUiThread(() -> mList.addView(toAdd));
+                            });
 
 
                 });

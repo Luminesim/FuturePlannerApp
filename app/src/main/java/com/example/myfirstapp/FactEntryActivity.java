@@ -15,14 +15,14 @@ import com.example.myfirstapp.db.EntityFactDetail;
 import com.example.myfirstapp.db.EntityFactWithDetails;
 import com.example.myfirstapp.db.EntityRepository;
 import com.example.myfirstapp.monad.MonadData;
-import com.example.myfirstapp.monad.MonadRepoAdapter;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.myfirstapp.monad.UserFacingMonadList;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import ca.anthrodynamics.indes.lang.Monad;
+import ca.anthrodynamics.indes.lang.Rate;
 
 public class FactEntryActivity extends AppCompatActivity {
     public static final String EXTRA_NAME = "com.exmaple.myfirstapp.NAME";
@@ -31,7 +31,7 @@ public class FactEntryActivity extends AppCompatActivity {
     private static final long NO_ID = 0l;
 
     private RecyclerView recyclerView;
-    private MonadRepoAdapter mAdapter;
+    private UserFacingMonadList mAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private List<MonadData> data = new ArrayList<>();
     private EntityRepository mEntities;
@@ -59,12 +59,24 @@ public class FactEntryActivity extends AppCompatActivity {
 
         // specify an adapter (see also next example)
         EditText editText = findViewById(R.id.commandEditText);
-        mAdapter = new MonadRepoAdapter(
+        mAdapter = new UserFacingMonadList(
                 this,
                 (formattedString, monadId, parameters) -> {
                     editText.append(" " + formattedString);
                     try {
-                        findViewById(R.id.buttonSave).setEnabled(true);
+
+                        // If the monad produces the correct type, enable the save button.
+                        // TODO FIXME: WORKS ONLY FOR INCOME, EXPENSES.
+                        if (mCategory == Category.Income || mCategory == Category.Expenses) {
+                            if (Rate.class.isAssignableFrom(mAdapter.getOutputType(monadId))) {
+                                findViewById(R.id.buttonSave).setEnabled(true);
+                            }
+                        }
+                        else {
+                            throw new Error("Unhandled category for save filter: " + mCategory);
+                        }
+
+                        // Add to the list of data.
                         MonadData next = new MonadData(monadId, parameters);
                         data.add(next);
                     } catch (Throwable t) {
@@ -118,7 +130,10 @@ public class FactEntryActivity extends AppCompatActivity {
                         return f.getFact().getUid() == mFactUid;
                     })
                     .findFirst()
-                    .orElseGet(() -> new EntityFactWithDetails(EntityFact.builder().category(mCategory).entityUid(mEntityUid).name(name).build(), new ArrayList<>()))
+                    .orElseGet(() -> new EntityFactWithDetails(
+                            EntityFact.builder().category(mCategory).entityUid(mEntityUid).name(name).build(),
+                            new ArrayList<>())
+                    )
                     .getFact();
 
             // Since we might need to update the fact's name and we may need to get an ID, do so.

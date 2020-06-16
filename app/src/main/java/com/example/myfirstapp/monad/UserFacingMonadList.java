@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myfirstapp.R;
 import com.example.myfirstapp.db.EntityFactDetail;
 import com.example.myfirstapp.input.AlertDialogFragment;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -28,7 +27,7 @@ import lombok.NonNull;
 /**
  * Allows monads to be navigated.
  */
-public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.PredictiveTextHolder> {
+public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadList.PredictiveTextHolder> {
     private final Callback mCallback;
     private List<String> mCurrentPredictiveViews = new ArrayList<>();
     private List<Monad> mCurrentOptions = new ArrayList<>();
@@ -65,11 +64,15 @@ public class MonadRepoAdapter extends RecyclerView.Adapter<MonadRepoAdapter.Pred
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MonadRepoAdapter(AppCompatActivity c, Callback callback) {
+    public UserFacingMonadList(AppCompatActivity c, Callback callback) {
 
         this.mCallback = callback;
         this.mData = MonadDatabase.getDatabase(c);
         updateMonadList();
+    }
+
+    public Class getOutputType(String monadId) {
+        return (Class)mData.getMonadById(monadId).getOutType().get();
     }
 
     /**

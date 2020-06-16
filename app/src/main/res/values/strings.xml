@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My First App</string>
+    <string name="app_name">FuturePlanner</string>
     <string name="edit_message">Enter a message</string>
     <string name="button_clear_monad_selection">Clear</string>
     <string name="monad_money_amount">Amount</string>
@@ -13,8 +13,8 @@
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
     <string name="title_activity_results">ResultsActivity</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_1">Tab A</string>
+    <string name="tab_text_2">Tab B</string>
     <string name="title_activity_category_contents_list">CategoryContentsList</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -30,5 +30,5 @@
     <string name="button_assets">Assets</string>
     <string name="hint_enter_name">Enter name</string>
     <string name="extra_entity_uid">com.example.myfirstapp.ENTITY_UID</string>
-    <string name="extra_fact_uid">EXTRA_FACT_UID</string>
+    <string name="extra_fact_uid">com.example.myfirstapp.EXTRA_FACT_UID</string>
 </resources>
