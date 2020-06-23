@@ -31,4 +31,6 @@
     <string name="hint_enter_name">Enter name</string>
     <string name="extra_entity_uid">com.example.myfirstapp.ENTITY_UID</string>
     <string name="extra_fact_uid">com.example.myfirstapp.EXTRA_FACT_UID</string>
+    <string name="monad_per_week_view_text">per week</string>
+    <string name="monad_income_type_other_income">in Other Income</string>
 </resources>

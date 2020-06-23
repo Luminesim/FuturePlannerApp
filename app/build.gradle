@@ -70,4 +70,9 @@ dependencies {
     //https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
 
+    // For background simulation work.
+    def work_version = "2.3.4"
+    implementation "androidx.work:work-runtime:$work_version"
+    androidTestImplementation "androidx.work:work-testing:$work_version"
+
 }
