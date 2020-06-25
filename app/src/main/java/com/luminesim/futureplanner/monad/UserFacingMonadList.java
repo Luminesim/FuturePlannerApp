@@ -22,6 +22,7 @@ import java.util.List;
 
 import ca.anthrodynamics.indes.lang.ComputableMonad;
 import ca.anthrodynamics.indes.lang.Monad;
+import ca.anthrodynamics.indes.lang.MonadInformation;
 import lombok.NonNull;
 
 /**
@@ -31,14 +32,14 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
     private final Callback mCallback;
     private List<String> mCurrentPredictiveViews = new ArrayList<>();
     private List<Monad> mCurrentOptions = new ArrayList<>();
-    private Monad mLastSelection = null;
+    private MonadInformation mSelectionThusFar = null;
     private MonadDatabase mData;
 
     /**
      * Goes back to starting monads.
      */
     public void restartSelection() {
-        mLastSelection = null;
+        mSelectionThusFar = null;
         updateMonadList();
     }
 
@@ -82,10 +83,10 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
         notifyItemRangeRemoved(0, mCurrentPredictiveViews.size());
         mCurrentOptions.clear();
         mCurrentPredictiveViews.clear();
-        if (mLastSelection == null) {
+        if (mSelectionThusFar == null) {
             mCurrentOptions = mData.getStartingOptions();
         } else {
-            mCurrentOptions = mData.getNextOptions(mLastSelection);
+            mCurrentOptions = mData.getNextOptions(mSelectionThusFar);
         }
         for (Monad next : mCurrentOptions) {
             mCurrentPredictiveViews.add(mData.getPredictiveText(next));
@@ -137,7 +138,13 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
      * @param parameters
      */
     public void triggerCallbackAndUpdateMonadList(@NonNull String summaryText, @NonNull String monadId, @NonNull Object[] parameters) {
-        mLastSelection = mData.getMonadById(monadId);
+        Monad lastSelection = mData.getMonadById(monadId);
+        if (mSelectionThusFar == null) {
+            mSelectionThusFar = lastSelection.getInfo();
+        }
+        else {
+            mSelectionThusFar = mSelectionThusFar.getMutableCompositionInfo(lastSelection);
+        }
 
         // Convert all parameters to those that the monad needs.
         ObjectMapper fixer = new ObjectMapper();
@@ -146,7 +153,7 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
         Object[] params = new Object[parameters.length];
         try {
             for (int i = 0; i < parameters.length; i += 1) {
-                params[i] = fixer.readValue("\""+parameters[i]+"\"", mLastSelection.getParameterTypes()[i]);
+                params[i] = fixer.readValue("\""+parameters[i]+"\"", lastSelection.getParameterTypes()[i]);
             }
         }
         catch (Throwable t) {
@@ -163,11 +170,17 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
 
         try {
             MonadData data = MonadData.fromJson(detail.getMonadJson());
-            mLastSelection = mData.getMonadById(data.getMonadId());
+            Monad lastSelection = mData.getMonadById(data.getMonadId());
+            if (mSelectionThusFar == null) {
+                mSelectionThusFar = lastSelection.getInfo();
+            }
+            else {
+                mSelectionThusFar = mSelectionThusFar.getMutableCompositionInfo(lastSelection);
+            }
             mCallback.callback(
                     mData.format(data),
                     data.getMonadId(),
-                    data.getParameters(mLastSelection.getParameterTypes(), false)
+                    data.getParameters(lastSelection.getParameterTypes(), false)
             );
             updateMonadList();
         }

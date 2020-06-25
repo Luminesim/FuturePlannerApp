@@ -4,16 +4,15 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Data;
-import androidx.work.Worker;
+import androidx.work.ListenableWorker;
 import androidx.work.WorkerParameters;
 
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
-import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
+import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -23,14 +22,11 @@ import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import ca.anthrodynamics.indes.Engine;
 import ca.anthrodynamics.indes.abm.Agent;
@@ -41,13 +37,9 @@ import ca.anthrodynamics.indes.sd.SDDiagram;
 import lombok.Getter;
 import lombok.Setter;
 
-@Deprecated
-public class SimulationWorker extends Worker {
-
-    /**
-     *
-     */
-    public static final String DATA_ENTITY_UID = "com.luminesim.futureplanner.DATA_ENTITY_UID";
+public class SimulationJob implements Runnable {
+    @Getter
+    private TreeMap<LocalDate, Double> fundsDataset = new TreeMap<>();
 
     /**
      * @apiNote Setter available as a test hook.
@@ -66,25 +58,21 @@ public class SimulationWorker extends Worker {
 
     /**
      * @param appContext   The application {@link Context}
-     * @param workerParams Parameters to setup the internal state of this worker
      */
-    public SimulationWorker(@NonNull Context appContext, @NonNull WorkerParameters workerParams) {
-        super(appContext, workerParams);
+    public SimulationJob(@NonNull Context appContext, @NonNull long entityUid) {
 
         // Record the entity and database.
         db = MonadDatabase.getDatabase(appContext);
         repo = new EntityRepository(appContext);
-        entityUid = workerParams.getInputData().getLong(DATA_ENTITY_UID, 0l);
+        this.entityUid = entityUid;
     }
 
-    @NonNull
     @Override
-    public Result doWork() {
+    public synchronized void run() {
 
         // Get the entity and do work.
         LocalDate startTime = LocalDate.now();
         AtomicBoolean done = new AtomicBoolean(false);
-        TreeMap<Double, Double> fundsDataset = new TreeMap<>();
 
         repo.getEntity(entityUid, entity -> {
 
@@ -154,28 +142,28 @@ public class SimulationWorker extends Worker {
             // Must be aggregated by type.
             Map<IncomeType, List<ComputableMonad>> incomeStreams = new HashMap<>();
             ongoingIncome.forEach(income ->
-                incomeStreams.computeIfAbsent(getIncomeType(income), t -> new ArrayList<>()).add(income)
+                    incomeStreams.computeIfAbsent(getIncomeType(income), t -> new ArrayList<>()).add(income)
             );
             incomeStreams.forEach((type, list) -> {
                 String incomeFlow = "Income: " + type.name();
-                        sd.addFlow(incomeFlow).fromVoid().to("Funds").at((nil, funds) -> getTotalFlow(engine, startTime, ongoingIncome));
-                        sd.addFlow("Taxes: " + type.name()).from("Funds").toVoid().at((funds, nil) -> {
-                            Double currentIncome = sd.get(incomeFlow);
-                            return getPersonalTaxRatePerYear(
-                                    startTime.plusDays((long) engine.time()),
-                                    type.getCurrency(),
-                                    currentIncome / YEAR,
-                                    type
-                                    ) * YEAR;
-                        });
-                    });
+                sd.addFlow(incomeFlow).fromVoid().to("Funds").at((nil, funds) -> getTotalFlow(engine, startTime, ongoingIncome));
+                sd.addFlow("Taxes: " + type.name()).from("Funds").toVoid().at((funds, nil) -> {
+                    Double currentIncome = sd.get(incomeFlow);
+                    return getPersonalTaxRatePerYear(
+                            startTime.plusDays((long) engine.time()),
+                            type.getCurrency(),
+                            currentIncome / YEAR,
+                            type
+                    ) * YEAR;
+                });
+            });
 
             // Run the simulation.
             engine.start();
             for (double i = 0; i < endTime; i += dt) {
                 engine.runUntil(i);
                 Log.i("Simulation", "Running until " + i + "/" + endTime + ", funds are " + sd.get("Funds"));
-                fundsDataset.put(i, sd.get("Funds"));
+                fundsDataset.put(startTime.plusDays((long)i), sd.get("Funds"));
             }
 
             workLock.lock();
@@ -190,15 +178,9 @@ public class SimulationWorker extends Worker {
             if (!done.get()) {
                 workDone.await();
             }
-            return Result.success();
-//                    (new Data.Builder())
-//                            .putString("Funds", fundsDataset.toString())
-//                            .putLong("StartEpochDay", startTime.toEpochDay())
-//                            .putDouble("FinalFunds", fundsDataset.lastEntry().getValue())
-//                            .build()
-//            );
+            return;
         } catch (Throwable t) {
-            return Result.failure();
+            throw new RuntimeException(t);
         } finally {
             workLock.unlock();
         }
@@ -286,7 +268,9 @@ public class SimulationWorker extends Worker {
                     // REQUIRES EVEN DT
                     LocalDate simulationTime = startTime.plusDays((long) engine.time());
                     isAtOrAfterStart = !simulationTime.isBefore(scheduledRate.getStart().get());
-                    isAtOrBeforeEnd = !simulationTime.isAfter(scheduledRate.getEnd().get());
+                    if (scheduledRate.getEnd().isPresent()) {
+                        isAtOrBeforeEnd = !simulationTime.isAfter(scheduledRate.getEnd().get());
+                    }
                 }
             }
             if (isAtOrAfterStart && isAtOrBeforeEnd) {
@@ -294,24 +278,5 @@ public class SimulationWorker extends Worker {
             }
         }
         return sum;
-//        return subFlows
-//                .stream()
-//                .map(flow -> ((Rate) flow.apply(ComputableMonad.NoInput)))
-//                .filter(rate -> {
-//                    boolean isAtOrAfterStart = true;
-//                    boolean isAtOrBeforeEnd = true;
-//                    if (rate instanceof ScheduledRate) {
-//                        ScheduledRate scheduledRate = (ScheduledRate) rate;
-//                        if (scheduledRate.getStart().isPresent()) {
-//                            // REQUIRES EVEN DT
-//                            LocalDate simulationTime = startTime.plusDays((long) engine.time());
-//                            isAtOrAfterStart = !simulationTime.isBefore(scheduledRate.getStart().get());
-//                            isAtOrBeforeEnd = !simulationTime.isAfter(scheduledRate.getEnd().get());
-//                        }
-//                    }
-//                    return isAtOrAfterStart && isAtOrBeforeEnd;
-//                })
-//                .mapToDouble(rate -> rate.getAsDouble())
-//                .sum();
     }
 }

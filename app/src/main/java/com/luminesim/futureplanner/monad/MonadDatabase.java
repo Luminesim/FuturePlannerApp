@@ -25,7 +25,9 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import ca.anthrodynamics.indes.lang.ComputableMonad;
+import ca.anthrodynamics.indes.lang.EndingMonad;
 import ca.anthrodynamics.indes.lang.Monad;
+import ca.anthrodynamics.indes.lang.MonadInformation;
 import ca.anthrodynamics.indes.lang.MonadRepo;
 import ca.anthrodynamics.indes.lang.StartingMonad;
 import ca.anthrodynamics.indes.lang.ToRateMonad;
@@ -114,7 +116,7 @@ public final class MonadDatabase {
         return mRepo.getStartingOptions();
     }
 
-    public List<Monad> getNextOptions(@NonNull Monad current) {
+    public List<Monad> getNextOptions(@NonNull MonadInformation current) {
         return mRepo.nextOptions(current);
     }
 
@@ -167,53 +169,46 @@ public final class MonadDatabase {
     }
 
     /**
-     *
      * @param monadJson
-     * @return
-     *  A computable value from its JSON representation.
+     * @return A computable value from its JSON representation.
      * @throws UnknownMonadException
      */
     public ComputableMonad fromJson(String monadJson) throws UnknownMonadException {
         try {
-            Log.i("FuturePlanner/"+MonadDatabase.class, "Data is " + monadJson);
+            Log.i("FuturePlanner/" + MonadDatabase.class, "Data is " + monadJson);
             MonadData data = MonadData.fromJson(monadJson);
 
             // Fix parameters.
             return getMonadById(data.getMonadId()).withParameters(deserializeParameters(data));
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             throw new UnknownMonadException(t);
         }
     }
 
     /**
-     *
      * @param monadId
-     * @return
-     *  The monad associated with the given ID.
+     * @return The monad associated with the given ID.
      */
     public Monad getMonadById(@NonNull String monadId) throws UnknownMonadException {
         Monad toReturn = mMonads.get(monadId);
         if (toReturn == null) {
-            throw new UnknownMonadException("Unknown monad ID: "+monadId);
+            throw new UnknownMonadException("Unknown monad ID: " + monadId);
         }
         return toReturn;
     }
 
     /**
-     * @return
-     *  The formatted text associated with the given monad and its data.
+     * @return The formatted text associated with the given monad and its data.
      */
     public String getFormattedStringFromJson(String monadJson) throws UnknownMonadException {
         try {
-            Log.i("FuturePlanner/"+MonadDatabase.class, "Data is " + monadJson);
+            Log.i("FuturePlanner/" + MonadDatabase.class, "Data is " + monadJson);
             MonadData data = MonadData.fromJson(monadJson);
 
             // Fix parameters.
             Object[] params = deserializeParameters(data);
             return format(data.getMonadId(), params);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             throw new UnknownMonadException(t);
         }
     }
@@ -253,9 +248,9 @@ public final class MonadDatabase {
                             (template, inputs) ->
                                     template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()))
                     );
-                    INSTANCE.add("IdPerYear", new ToRateMonad(1/365.0), context.getString(R.string.monad_per_year_view_text), context.getString(R.string.monad_per_year_view_text));
-                    INSTANCE.add("IdPerMonth", new ToRateMonad(1/(365.0/12.0)), context.getString(R.string.monad_per_month_view_text), context.getString(R.string.monad_per_month_view_text));
-                    INSTANCE.add("IdPerWeek", new ToRateMonad(1/(365.0/52.0)), context.getString(R.string.monad_per_week_view_text), context.getString(R.string.monad_per_week_view_text));
+                    INSTANCE.add("IdPerYear", new ToRateMonad(1 / 365.0), context.getString(R.string.monad_per_year_view_text), context.getString(R.string.monad_per_year_view_text));
+                    INSTANCE.add("IdPerMonth", new ToRateMonad(1 / (365.0 / 12.0)), context.getString(R.string.monad_per_month_view_text), context.getString(R.string.monad_per_month_view_text));
+                    INSTANCE.add("IdPerWeek", new ToRateMonad(1 / (365.0 / 52.0)), context.getString(R.string.monad_per_week_view_text), context.getString(R.string.monad_per_week_view_text));
                     INSTANCE.add("IdPerDay", new ToRateMonad(1.0), context.getString(R.string.monad_per_day_view_text), context.getString(R.string.monad_per_day_view_text));
                     INSTANCE.add(
                             "IdStarting",
@@ -268,7 +263,18 @@ public final class MonadDatabase {
                                 return template.withParameters(ld);
                             }
                     );
-                    INSTANCE.add("IdCADOtherIncome", new IncomeTypeMonad(IncomeType.CADOtherIncome),context.getString(R.string.monad_income_type_other_income),context.getString(R.string.monad_income_type_other_income));
+                    INSTANCE.add(
+                            "IdEnding",
+                            new EndingMonad("Date"),
+                            "ending %s",
+                            context.getString(R.string.monad_ending_view_text),
+                            Optional.of(() -> new CalendarInputFragment()),
+                            (template, view) -> {
+                                LocalDate ld = LocalDate.ofEpochDay(((CalendarView) view.findViewById(R.id.datePicker)).getDate() / (24 * 60 * 60 * 1000));
+                                return template.withParameters(ld);
+                            }
+                    );
+                    INSTANCE.add("IdCADOtherIncome", new IncomeTypeMonad(IncomeType.CADOtherIncome), context.getString(R.string.monad_income_type_other_income), context.getString(R.string.monad_income_type_other_income));
 
 
                 }
@@ -283,6 +289,7 @@ public final class MonadDatabase {
 
     /**
      * Converts JSON to a computable monad.
+     *
      * @param monadJson
      * @return
      */
@@ -291,11 +298,9 @@ public final class MonadDatabase {
         Object[] params = deserializeParameters(data);
         if (params.length == 0) {
             return getMonadById(data.getMonadId()).withParameters();
-        }
-        else if (params.length == 1) {
+        } else if (params.length == 1) {
             return getMonadById(data.getMonadId()).withParameters(params[0]);
-        }
-        else {
+        } else {
             return getMonadById(data.getMonadId()).withParameters(params);
         }
     }

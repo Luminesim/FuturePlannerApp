@@ -1,5 +1,8 @@
 package com.luminesim.futureplanner.monad.types;
 
+import java.util.Currency;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import ca.anthrodynamics.indes.lang.Monad;
@@ -12,7 +15,6 @@ import lombok.NonNull;
 public class IncomeTypeMonad extends Monad<Number, Number> {
 
     public static String INFO_INCOME_TYPE = "com.luminesim.futureplanner.INFO_INCOME_TYPE";
-    private IncomeType incomeType;
 
     /**
      * Can only apply this monad to numbers without an income type.
@@ -20,12 +22,11 @@ public class IncomeTypeMonad extends Monad<Number, Number> {
      * @param incomeType
      */
     public IncomeTypeMonad(@NonNull IncomeType incomeType) {
-        super(Optional.of(Number.class),
-                Optional.of(Number.class),
-                monad -> !monad.getInfo().getProperties().containsKey(INFO_INCOME_TYPE),
+        super(
+                getDefaultInfo(incomeType),
+                monad -> !monad.getProperties().containsKey(INFO_INCOME_TYPE),
                 new Class[0],
                 new String[0]);
-        this.incomeType = incomeType;
     }
 
     @Override
@@ -33,13 +34,10 @@ public class IncomeTypeMonad extends Monad<Number, Number> {
         return number;
     }
 
-    /**
-     * Gets information about the monad.
-     *
-     * @return An info package with the type of income appended.
-     */
-    @Override
-    public MonadInformation<Number> getInfo() {
-        return super.getInfo().copyMutable(Number.class).setProperty(INFO_INCOME_TYPE, incomeType);
+    private static MonadInformation<Number, Number> getDefaultInfo(@NonNull IncomeType incomeType) {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(INFO_INCOME_TYPE, incomeType);
+        MonadInformation info = new MonadInformation(properties, Optional.of(Number.class), Optional.of(Number.class));
+        return info;
     }
 }

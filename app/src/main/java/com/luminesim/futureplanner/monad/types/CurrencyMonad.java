@@ -1,6 +1,8 @@
 package com.luminesim.futureplanner.monad.types;
 
 import java.util.Currency;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import ca.anthrodynamics.indes.lang.Monad;
@@ -10,18 +12,21 @@ import lombok.NonNull;
 public class CurrencyMonad extends Monad<Monad.None, Number> {
 
     public static String INFO_CURRENCY_CODE = "com.luminesim.futureplanner.INFO_CURRENCY_CODE";
-    private final Currency currency;
 
     public CurrencyMonad(@NonNull Currency currency) {
         super(
-                Optional.of(Monad.None.class),
-                Optional.of(Number.class),
+                getDefaultInfo(currency),
                 x -> true,
                 new Class[]{Number.class},
                 new String[]{currency.getCurrencyCode()});
-        this.currency = currency;
     }
 
+    private static MonadInformation<None, Number> getDefaultInfo(Currency currency) {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(INFO_CURRENCY_CODE, currency.getCurrencyCode());
+        MonadInformation info = new MonadInformation(properties, Optional.of(None.class), Optional.of(Number.class));
+        return info;
+    }
 
     /**
      * Returns the value.
@@ -33,15 +38,5 @@ public class CurrencyMonad extends Monad<Monad.None, Number> {
     protected Double apply(Monad.None in, Object[] params) {
         // Assign the money value.
         return (Double) params[0];
-    }
-
-    /**
-     * Gets information about the monad.
-     *
-     * @return An info package with the type of currency appended as a currency code.
-     */
-    @Override
-    public MonadInformation<Number> getInfo() {
-        return super.getInfo().copyMutable(Number.class).setProperty(INFO_CURRENCY_CODE, currency.getCurrencyCode());
     }
 }
