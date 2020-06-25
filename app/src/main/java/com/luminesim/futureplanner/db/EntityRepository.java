@@ -39,14 +39,10 @@ public class EntityRepository {
         return mEntities;
     }
 
-//    LiveData<List<EntityFactWithDetails>> getEntityFacts(Entity entity) {
-//        return mEntityDao.getEntityFacts(entity.getUid());
-//    }
-
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
     // that you're not doing any long running operations on the main thread, blocking the UI.
     public void insert(Entity entity) {
-        EntityDatabase.databaseWriteExecutor.execute(() -> {
+        submit(() -> {
             mEntityDao.insert(entity);
         });
     }
@@ -56,12 +52,12 @@ public class EntityRepository {
     }
 
     public void getEntity(long uid, Consumer<EntityWithFacts> callback) {
-        EntityDatabase.databaseWriteExecutor.execute(() -> {
+        submit(() -> {
             callback.accept(mEntityDao.getEntity(uid));
         });
     }
     public void getFact(long uid, Consumer<EntityFactWithDetails> callback) {
-        EntityDatabase.databaseWriteExecutor.execute(() -> {
+        submit(() -> {
             callback.accept(mEntityDao.getEntityFact(uid));
         });
     }
@@ -73,7 +69,7 @@ public class EntityRepository {
      */
     public void updateFact(long entityUid, @NonNull EntityFact fact, @NonNull List<EntityFactDetail> details, Runnable onSaved) {
 
-        EntityDatabase.databaseWriteExecutor.execute(() -> {
+        submit(() -> {
             // Get the entity. Ensure it exists.
             EntityWithFacts entity = mEntityDao.getEntity(entityUid);
             if (entity == null) {
@@ -96,9 +92,34 @@ public class EntityRepository {
         });
     }
 
+    /**
+     * Deletes all database items.
+     */
     public void deleteAll() {
-        EntityDatabase.databaseWriteExecutor.execute(() -> {
+        submit(() -> {
             mEntityDao.deleteEntities();
         });
+    }
+
+    /**
+     * Deletes the given fact and associated details.
+     * @param factUid
+     *  The ID of the fact.
+     */
+    public void deleteFact(long factUid) {
+        submit(() -> {
+            mEntityDao.deleteEntityFact(factUid);
+            mEntityDao.deleteEntityFactDetails(factUid);
+        });
+    }
+
+    /**
+     * Submits a job to do in a separate thread.
+     * @param asyncAction
+     *  The action to run.
+     * @pre asyncAction != null
+     */
+    private void submit(@NonNull Runnable asyncAction) {
+        EntityDatabase.databaseWriteExecutor.execute(asyncAction);
     }
 }

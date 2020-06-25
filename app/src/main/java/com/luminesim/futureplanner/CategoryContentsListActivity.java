@@ -95,23 +95,5 @@ public class CategoryContentsListActivity extends AppCompatActivity {
 
         // Update the list if needed.
         runOnUiThread(this::updateList);
-        if (resultCode == RESULT_OK) {
-//            runOnUiThread(this::updateList);
-        }
-
-//        // create a new view
-//        LinearLayout view = findViewById(R.id.categoryContentItemList);
-//        View toAdd = getLayoutInflater().inflate(R.layout.monad_selection_layout, null);
-//        ((TextView) toAdd.findViewById(R.id.label)).setText(String.format(
-//                "%s: %s",
-//                data.getStringExtra(FactEntryActivity.EXTRA_NAME),
-//                data.getStringExtra(FactEntryActivity.EXTRA_FORMATTED_TEXT)
-//        ));
-//        view.addView(toAdd);
-//        if (requestCode == RC_ADD) {
-//            Log.i("TEST", "Result: " + data.getStringExtra("DATA"));
-//        } else {
-//            Log.i("TEST", "Unknown request code: " + requestCode);
-//        }
     }
 }

@@ -13,8 +13,8 @@
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
     <string name="title_activity_results">ResultsActivity</string>
-    <string name="tab_text_1">Tab A</string>
-    <string name="tab_text_2">Tab B</string>
+    <string name="tab_text_1">Finances</string>
+    <string name="tab_text_2">Goals</string>
     <string name="title_activity_category_contents_list">CategoryContentsList</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -34,4 +34,5 @@
     <string name="monad_per_week_view_text">per week</string>
     <string name="monad_income_type_other_income">in Other Income</string>
     <string name="monad_ending_view_text"><![CDATA[ending <date>]]></string>
+    <string name="button_delete_fact">Delete</string>
 </resources>

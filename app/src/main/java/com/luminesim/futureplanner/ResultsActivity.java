@@ -28,6 +28,11 @@ import java.util.concurrent.Executors;
 
 public class ResultsActivity extends AppCompatActivity {
 
+    /**
+     * Boolean extra.
+     * If true, the simulation's facts have changed, warranting a re-run.
+     */
+    public static final String EXTRA_SIMULATION_FACTS_CHANGED = "com.luminesim.futureplanner.EXTRA_SIMULATION_FACTS_CHANGED";
     private EntityRepository mEntities;
     private SimulationJob mSimulation;
     private ExecutorService mRunner = Executors.newFixedThreadPool(1);
@@ -68,22 +73,29 @@ public class ResultsActivity extends AppCompatActivity {
                 long uid = 0l;
                 if (!getIntent().hasExtra(getString(R.string.extra_entity_uid))) {
                     getIntent().putExtra(getString(R.string.extra_entity_uid), list.get(0).getEntity().getUid());
-                    Log.i("Setup", "Entity ID is " + list.get(0).getEntity().getUid());
+                    getIntent().putExtra(EXTRA_SIMULATION_FACTS_CHANGED, true);
                     uid = list.get(0).getEntity().getUid();
                 } else {
                     uid = getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l);
                 }
 
+                // Run the simulation.
                 runSimulation(uid);
             }
         });
     }
 
+    /**
+     * Resumes the activity, re-running the simulation if facts have changed.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         if (getIntent().hasExtra(getString(R.string.extra_entity_uid))) {
-            runSimulation(getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
+//            if (getIntent().getBooleanExtra(EXTRA_SIMULATION_FACTS_CHANGED, false)) {
+                // Run the simulation.
+                runSimulation(getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
+//            }
         }
     }
 
@@ -101,6 +113,9 @@ public class ResultsActivity extends AppCompatActivity {
                 chart.setData(data);
                 chart.invalidate();
             });
+
+//            // Note that we don't need to run the simulation again.
+//            getIntent().putExtra(ResultsActivity.EXTRA_SIMULATION_FACTS_CHANGED, false);
             Log.i("SIMULATION COMPLETE!", "SIMULATION COMPLETE!");
         });
     }

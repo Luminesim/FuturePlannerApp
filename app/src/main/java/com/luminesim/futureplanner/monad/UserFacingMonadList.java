@@ -19,6 +19,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import ca.anthrodynamics.indes.lang.ComputableMonad;
 import ca.anthrodynamics.indes.lang.Monad;
@@ -34,6 +35,19 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
     private List<Monad> mCurrentOptions = new ArrayList<>();
     private MonadInformation mSelectionThusFar = null;
     private MonadDatabase mData;
+
+    /**
+     * @return
+     *  The output type of the current selection.
+     */
+    public Optional<Class<?>> getCurrentSelectionOutputType() {
+        if (mSelectionThusFar == null) {
+            return Optional.empty();
+        }
+        else {
+            return mSelectionThusFar.getOutType();
+        }
+    }
 
     /**
      * Goes back to starting monads.

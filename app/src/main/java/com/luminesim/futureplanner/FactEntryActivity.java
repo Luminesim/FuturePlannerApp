@@ -1,11 +1,14 @@
 package com.luminesim.futureplanner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -28,6 +31,7 @@ public class FactEntryActivity extends AppCompatActivity {
     public static final String EXTRA_FORMATTED_TEXT = "com.exmaple.myfirstapp.FORMATTED_TEXT";
     public static final String EXTRA_DATA_CATEGORY = "com.extra.myfirstapp.EXTRA_DATA_CATEGORY";
     private static final long NO_ID = 0l;
+    public static final int RESULT_OK_FACT_DELETED = 100;
 
     private RecyclerView recyclerView;
     private UserFacingMonadList mAdapter;
@@ -47,7 +51,6 @@ public class FactEntryActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.predictive_option_list);
         mEntities = new EntityRepository(getApplicationContext());
 
-
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         recyclerView.setHasFixedSize(true);
@@ -63,17 +66,7 @@ public class FactEntryActivity extends AppCompatActivity {
                 (formattedString, monadId, parameters) -> {
                     editText.append(" " + formattedString);
                     try {
-
-                        // If the monad produces the correct type, enable the save button.
-                        // TODO FIXME: WORKS ONLY FOR INCOME, EXPENSES.
-                        if (mCategory == Category.Income || mCategory == Category.Expenses) {
-                            if (Rate.class.isAssignableFrom(mAdapter.getOutputType(monadId))) {
-                                findViewById(R.id.buttonSave).setEnabled(true);
-                            }
-                        }
-                        else {
-                            throw new Error("Unhandled category for save filter: " + mCategory);
-                        }
+                        setSaveButtonState();
 
                         // Add to the list of data.
                         MonadData next = new MonadData(monadId, parameters);
@@ -88,6 +81,53 @@ public class FactEntryActivity extends AppCompatActivity {
         mEntityUid = getIntent().getLongExtra(getString(R.string.extra_entity_uid), NO_ID);
         mFactUid = getIntent().getLongExtra(getString(R.string.extra_fact_uid), NO_ID);
         mCategory = Category.valueOf(getIntent().getStringExtra(EXTRA_DATA_CATEGORY));
+
+        // Ensure that the name field causes the save button to enable / disable.
+        ((EditText) findViewById(R.id.textFactName)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Nothing to do.
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // When the text changes, we may need to toggle buttons.
+                setSaveButtonState(s);
+            }
+        });
+
+        // Set whether or not save should be enabled.
+        setSaveButtonState();
+    }
+
+    /**
+     * Sets the save button's state based on the current text in the editable field
+     * and the current selection.
+     */
+    private void setSaveButtonState(Editable name) {
+
+        // There needs to be a non-whitespace name.
+        boolean isEnabled = (name.toString().trim().length() > 0 && !name.toString().trim().equals(""))
+                // And the selection must provide an output type.
+                && mAdapter.getCurrentSelectionOutputType().isPresent()
+                // And the output type must produce a rate or a one-off expense.
+                // XXXX TODO FIXME: THIS ONLY WORKS FOR INCOME / EXPENSES.
+                && Rate.class.isAssignableFrom(mAdapter.getCurrentSelectionOutputType().get());
+
+        // Toggle enabled based on the above criteria.
+        findViewById(R.id.buttonSave).setEnabled(isEnabled);
+    }
+
+    /**
+     * Sets the save button's state based on the current text in the name field
+     * and the current selection.
+     */
+    private void setSaveButtonState() {
+        setSaveButtonState(((EditText) findViewById(R.id.textFactName)).getText());
     }
 
     @Override
@@ -105,6 +145,9 @@ public class FactEntryActivity extends AppCompatActivity {
                 });
             });
         }
+
+        // Ensure the save button is properly enabled / disabled.
+        setSaveButtonState();
     }
 
     /**
@@ -155,6 +198,7 @@ public class FactEntryActivity extends AppCompatActivity {
                 Intent out = new Intent();
                 EditText editText = findViewById(R.id.commandEditText);
                 out.putExtra(EXTRA_FORMATTED_TEXT, editText.getText().toString());
+                out.putExtra(ResultsActivity.EXTRA_SIMULATION_FACTS_CHANGED, true);
                 out.putExtra(EXTRA_NAME, name);
                 setResult(RESULT_OK, out);
                 finish();
@@ -165,11 +209,34 @@ public class FactEntryActivity extends AppCompatActivity {
     /**
      * Called when the user taps the clear button
      */
-    public void clearSelection(View view) {
+    public void clearSelection(@NonNull View view) {
         EditText editText = (EditText) findViewById(R.id.commandEditText);
         editText.setText("");
         data.clear();
-        findViewById(R.id.buttonSave).setEnabled(false);
+        setSaveButtonState();
         mAdapter.restartSelection();
+    }
+
+    /**
+     * Called when the user taps the delete button
+     */
+    public void deleteSelection(@NonNull View view) {
+
+        // Disable the save and cancel button while things delete.
+        findViewById(R.id.buttonSave).setEnabled(false);
+        findViewById(R.id.buttonClear).setEnabled(false);
+
+        // Delete the fact (if it already exists).
+        boolean simulationInputsChanged = false;
+        if (mFactUid != NO_ID) {
+            mEntities.deleteFact(mFactUid);
+            simulationInputsChanged = true;
+        }
+
+        // All done.
+        Intent out = new Intent();
+        out.putExtra(ResultsActivity.EXTRA_SIMULATION_FACTS_CHANGED, simulationInputsChanged);
+        setResult(RESULT_OK_FACT_DELETED, out);
+        finish();
     }
 }
