@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.input.AlertDialogFragment;
@@ -31,6 +32,7 @@ import lombok.NonNull;
  */
 public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadList.PredictiveTextHolder> {
     private final Callback mCallback;
+    private final Category mCategory;
     private List<String> mCurrentPredictiveViews = new ArrayList<>();
     private List<Monad> mCurrentOptions = new ArrayList<>();
     private MonadInformation mSelectionThusFar = null;
@@ -79,10 +81,11 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public UserFacingMonadList(AppCompatActivity c, Callback callback) {
+    public UserFacingMonadList(AppCompatActivity c, Category currentCategory, Callback callback) {
 
         this.mCallback = callback;
         this.mData = MonadDatabase.getDatabase(c);
+        this.mCategory = currentCategory;
         updateMonadList();
     }
 
@@ -98,9 +101,9 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
         mCurrentOptions.clear();
         mCurrentPredictiveViews.clear();
         if (mSelectionThusFar == null) {
-            mCurrentOptions = mData.getStartingOptions();
+            mCurrentOptions = mData.getStartingOptions(mCategory);
         } else {
-            mCurrentOptions = mData.getNextOptions(mSelectionThusFar);
+            mCurrentOptions = mData.getNextOptions(mSelectionThusFar, mCategory);
         }
         for (Monad next : mCurrentOptions) {
             mCurrentPredictiveViews.add(mData.getPredictiveText(next));

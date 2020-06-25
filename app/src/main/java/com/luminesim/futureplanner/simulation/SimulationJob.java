@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.ListenableWorker;
-import androidx.work.WorkerParameters;
 
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityRepository;
@@ -13,9 +11,11 @@ import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
+import com.luminesim.futureplanner.monad.types.OneOffAmount;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Currency;
@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import ca.anthrodynamics.indes.Engine;
 import ca.anthrodynamics.indes.abm.Agent;
 import ca.anthrodynamics.indes.lang.ComputableMonad;
+import ca.anthrodynamics.indes.lang.Monad;
 import ca.anthrodynamics.indes.lang.Rate;
 import ca.anthrodynamics.indes.lang.ScheduledRate;
 import ca.anthrodynamics.indes.sd.SDDiagram;
@@ -47,7 +48,7 @@ public class SimulationJob implements Runnable {
     @Setter
     private EntityRepository repo;
     /**
-     * @apiNote  Getter available as a test hook.
+     * @apiNote Getter available as a test hook.
      */
     @Getter
     private Agent root;
@@ -57,7 +58,7 @@ public class SimulationJob implements Runnable {
     private Condition workDone = workLock.newCondition();
 
     /**
-     * @param appContext   The application {@link Context}
+     * @param appContext The application {@link Context}
      */
     public SimulationJob(@NonNull Context appContext, @NonNull long entityUid) {
 
@@ -92,8 +93,14 @@ public class SimulationJob implements Runnable {
                 fact.getDetails().stream().sorted(Comparator.comparingInt(EntityFactDetail::getStepNumber)).forEach(detail -> {
                     try {
                         actions.add(db.makeComputable(detail.getMonadJson()));
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (Throwable t) {
+                        throw new RuntimeException(String.format(
+                                "Problem with Entity %s Fact %s Detail %s.",
+                                ""+fact.getFact().getEntityUid(),
+                                ""+fact.getFact().getUid(),
+                                ""+detail.getUid()),
+                                t
+                        );
                     }
                 });
 
@@ -115,6 +122,17 @@ public class SimulationJob implements Runnable {
                             break;
                         case Expenses:
                             ongoingExpenses.add(action);
+                            break;
+                        default:
+                            throw new Error("Unhandled fact category: " + fact.getFact().getCategory());
+                    }
+                } else if (OneOffAmount.class.isAssignableFrom((Class) action.getOutType().get())) {
+                    switch (fact.getFact().getCategory()) {
+                        case Income:
+                            oneOffIncome.add(action);
+                            break;
+                        case Expenses:
+                            oneOffExpenses.add(action);
                             break;
                         default:
                             throw new Error("Unhandled fact category: " + fact.getFact().getCategory());
@@ -158,12 +176,37 @@ public class SimulationJob implements Runnable {
                 });
             });
 
+            // Add one-off events.
+            oneOffIncome.forEach(incomeEvent -> {
+                OneOffAmount amount = (OneOffAmount) incomeEvent.apply(Monad.NoInput);
+                double when = (double) startTime.until(amount.getTime(), ChronoUnit.DAYS);
+                if (when >= 0) {
+
+                    // TODO: TAXES ON THIS AMOUNT?
+                    root.addEvent(when, e -> sd.updateStock("Funds", old -> {
+                        double untaxedAmount = amount.getAmount().getAsDouble();
+                        return old + untaxedAmount;
+                    }));
+                }
+            });
+            oneOffExpenses.forEach(expenseEvent -> {
+                OneOffAmount amount = (OneOffAmount) expenseEvent.apply(Monad.NoInput);
+                double when = (double) startTime.until(amount.getTime(), ChronoUnit.DAYS);
+                if (when >= 0) {
+
+                    // TODO: TAXES ON THIS AMOUNT?
+                    root.addEvent(when, e -> sd.updateStock("Funds", old -> {
+                        return old - amount.getAmount().getAsDouble();
+                    }));
+                }
+            });
+
             // Run the simulation.
             engine.start();
             for (double i = 0; i < endTime; i += dt) {
                 engine.runUntil(i);
                 Log.i("Simulation", "Running until " + i + "/" + endTime + ", funds are " + sd.get("Funds"));
-                fundsDataset.put(startTime.plusDays((long)i), sd.get("Funds"));
+                fundsDataset.put(startTime.plusDays((long) i), sd.get("Funds"));
             }
 
             workLock.lock();
@@ -197,7 +240,7 @@ public class SimulationJob implements Runnable {
 
         // Return the appropriate income type.
         Currency incomeCurrency = Currency.getInstance((String) income.getInfo().getProperties().get(CurrencyMonad.INFO_CURRENCY_CODE));
-        return  (IncomeType)income.getInfo().getProperties().getOrDefault(IncomeTypeMonad.INFO_INCOME_TYPE, unspecifiedTypes.get(incomeCurrency));
+        return (IncomeType) income.getInfo().getProperties().getOrDefault(IncomeTypeMonad.INFO_INCOME_TYPE, unspecifiedTypes.get(incomeCurrency));
     }
 
     /**

@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.CalendarView;
 import android.widget.EditText;
 
+import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.input.AlertDialogFragment;
 import com.luminesim.futureplanner.input.CalendarInputFragment;
@@ -13,9 +14,15 @@ import com.luminesim.futureplanner.input.NumericAmountInputFragment;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
+import com.luminesim.futureplanner.monad.types.OnDateMonad;
+
+import org.json.JSONArray;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import ca.anthrodynamics.indes.lang.ComputableMonad;
 import ca.anthrodynamics.indes.lang.EndingMonad;
@@ -80,6 +88,11 @@ public final class MonadDatabase {
     private MonadRepo mRepo = new MonadRepo();
 
     /**
+     * The categories for which a monad may be used.
+     */
+    private final Map<String, List<Category>> mCategories = new HashMap<>();
+
+    /**
      * @param key
      * @param monad
      * @param formatter
@@ -92,6 +105,7 @@ public final class MonadDatabase {
     public MonadDatabase add(
             @NonNull String key,
             @NonNull Monad monad,
+            @NonNull List<Category> validCategories,
             @NonNull String formatter,
             @NonNull String predictiveView,
             @NonNull Optional<Supplier<AlertDialogFragment>> inputView,
@@ -103,8 +117,14 @@ public final class MonadDatabase {
             throw new IllegalArgumentException("Duplicate key: " + key);
         }
 
+        // If the valid category list is empty, quit.
+        if (validCategories.isEmpty()) {
+            throw new IllegalArgumentException("Category list must have at least one item: " + key);
+        }
+
         mMonads.put(key, monad);
         mKeys.put(monad, key);
+        mCategories.put(key, Collections.unmodifiableList(new ArrayList<>(validCategories)));
         mFormatters.put(key, formatter);
         mPredictiveViews.put(key, predictiveView);
         mInputViews.put(key, inputView);
@@ -112,12 +132,15 @@ public final class MonadDatabase {
         return this;
     }
 
-    public List<Monad> getStartingOptions() {
-        return mRepo.getStartingOptions();
+    public List<Monad> getStartingOptions(@NonNull Category currentCategory) {
+
+        // Get all valid options that work in this category.
+        return mRepo.getStartingOptions().stream().filter(next -> mCategories.get(getId(next)).contains(currentCategory)).collect(Collectors.toList());
     }
 
-    public List<Monad> getNextOptions(@NonNull MonadInformation current) {
-        return mRepo.nextOptions(current);
+    public List<Monad> getNextOptions(@NonNull MonadInformation current, @NonNull Category currentCategory) {
+        // Get all valid options that work in this category.
+        return mRepo.nextOptions(current).stream().filter(next -> mCategories.get(getId(next)).contains(currentCategory)).collect(Collectors.toList());
     }
 
     public String getPredictiveText(@NonNull Monad next) {
@@ -240,7 +263,8 @@ public final class MonadDatabase {
                     // Create the available monads.
                     INSTANCE.add(
                             "IdMoneyAmount",
-                            new CurrencyMonad(Currency.getInstance("CAD")),//context.getString(R.string.monad_money_amount)),
+                            new CurrencyMonad(Currency.getInstance("CAD")),
+                            Arrays.asList(Category.values()),
                             "$ %s",
                             context.getString(R.string.monad_money_view_text),
                             Optional.of(() -> new NumericAmountInputFragment()),
@@ -248,13 +272,14 @@ public final class MonadDatabase {
                             (template, inputs) ->
                                     template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()))
                     );
-                    INSTANCE.add("IdPerYear", new ToRateMonad(1 / 365.0), context.getString(R.string.monad_per_year_view_text), context.getString(R.string.monad_per_year_view_text));
-                    INSTANCE.add("IdPerMonth", new ToRateMonad(1 / (365.0 / 12.0)), context.getString(R.string.monad_per_month_view_text), context.getString(R.string.monad_per_month_view_text));
-                    INSTANCE.add("IdPerWeek", new ToRateMonad(1 / (365.0 / 52.0)), context.getString(R.string.monad_per_week_view_text), context.getString(R.string.monad_per_week_view_text));
-                    INSTANCE.add("IdPerDay", new ToRateMonad(1.0), context.getString(R.string.monad_per_day_view_text), context.getString(R.string.monad_per_day_view_text));
+                    INSTANCE.add("IdPerYear", new ToRateMonad(1 / 365.0), Arrays.asList(Category.values()), context.getString(R.string.monad_per_year_view_text), context.getString(R.string.monad_per_year_view_text));
+                    INSTANCE.add("IdPerMonth", new ToRateMonad(1 / (365.0 / 12.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_month_view_text), context.getString(R.string.monad_per_month_view_text));
+                    INSTANCE.add("IdPerWeek", new ToRateMonad(1 / (365.0 / 52.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_week_view_text), context.getString(R.string.monad_per_week_view_text));
+                    INSTANCE.add("IdPerDay", new ToRateMonad(1.0), Arrays.asList(Category.values()), context.getString(R.string.monad_per_day_view_text), context.getString(R.string.monad_per_day_view_text));
                     INSTANCE.add(
                             "IdStarting",
                             new StartingMonad("Date"),
+                            Arrays.asList(Category.values()),
                             "starting %s",
                             context.getString(R.string.monad_starting_view_text),
                             Optional.of(() -> new CalendarInputFragment()),
@@ -266,6 +291,7 @@ public final class MonadDatabase {
                     INSTANCE.add(
                             "IdEnding",
                             new EndingMonad("Date"),
+                            Arrays.asList(Category.values()),
                             "ending %s",
                             context.getString(R.string.monad_ending_view_text),
                             Optional.of(() -> new CalendarInputFragment()),
@@ -274,7 +300,25 @@ public final class MonadDatabase {
                                 return template.withParameters(ld);
                             }
                     );
-                    INSTANCE.add("IdCADOtherIncome", new IncomeTypeMonad(IncomeType.CADOtherIncome), context.getString(R.string.monad_income_type_other_income), context.getString(R.string.monad_income_type_other_income));
+                    INSTANCE.add(
+                            "IdOnDate",
+                            new OnDateMonad("Date"),
+                            Arrays.asList(Category.values()),
+                            "once on %s",
+                            context.getString(R.string.monad_one_off_view_text),
+                            Optional.of(() -> new CalendarInputFragment()),
+                            (template, view) -> {
+                                LocalDate ld = LocalDate.ofEpochDay(((CalendarView) view.findViewById(R.id.datePicker)).getDate() / (24 * 60 * 60 * 1000));
+                                return template.withParameters(ld.atTime(0, 0));
+                            }
+                    );
+                    INSTANCE.add(
+                            "IdCADOtherIncome",
+                            new IncomeTypeMonad(IncomeType.CADOtherIncome),
+                            Arrays.asList(Category.Income),
+                            context.getString(R.string.monad_income_type_other_income),
+                            context.getString(R.string.monad_income_type_other_income)
+                    );
 
 
                 }
@@ -283,8 +327,8 @@ public final class MonadDatabase {
         return INSTANCE;
     }
 
-    private void add(@NonNull String id, @NonNull Monad monad, @NonNull String formatter, @NonNull String predictiveView) {
-        this.add(id, monad, formatter, predictiveView, Optional.empty(), (template, view) -> template.withParameters());
+    private void add(@NonNull String id, @NonNull Monad monad, @NonNull List<Category> validCategories, @NonNull String formatter, @NonNull String predictiveView) {
+        this.add(id, monad, validCategories, formatter, predictiveView, Optional.empty(), (template, view) -> template.withParameters());
     }
 
     /**

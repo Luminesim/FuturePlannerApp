@@ -35,4 +35,5 @@
     <string name="monad_income_type_other_income">in Other Income</string>
     <string name="monad_ending_view_text"><![CDATA[ending <date>]]></string>
     <string name="button_delete_fact">Delete</string>
+    <string name="monad_one_off_view_text"><![CDATA[once on <date>]]></string>
 </resources>

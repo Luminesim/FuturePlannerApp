@@ -60,6 +60,7 @@ public class ResultsActivity extends AppCompatActivity {
         mEntities = new EntityRepository(getApplicationContext());
 
 //        mEntities.deleteAll();
+//        mEntities.deleteFact(29);
 
         LiveData<List<EntityWithFacts>> entities = mEntities.getEntities();
         entities.observe(this, list -> {

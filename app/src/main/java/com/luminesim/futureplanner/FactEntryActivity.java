@@ -19,6 +19,7 @@ import com.luminesim.futureplanner.db.EntityFactWithDetails;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadData;
 import com.luminesim.futureplanner.monad.UserFacingMonadList;
+import com.luminesim.futureplanner.monad.types.OneOffAmount;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -50,6 +51,7 @@ public class FactEntryActivity extends AppCompatActivity {
         // Data setup.
         recyclerView = (RecyclerView) findViewById(R.id.predictive_option_list);
         mEntities = new EntityRepository(getApplicationContext());
+        mCategory = Category.valueOf(getIntent().getStringExtra(EXTRA_DATA_CATEGORY));
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -63,6 +65,7 @@ public class FactEntryActivity extends AppCompatActivity {
         EditText editText = findViewById(R.id.commandEditText);
         mAdapter = new UserFacingMonadList(
                 this,
+                mCategory,
                 (formattedString, monadId, parameters) -> {
                     editText.append(" " + formattedString);
                     try {
@@ -80,7 +83,6 @@ public class FactEntryActivity extends AppCompatActivity {
         // Get the entity and fact.
         mEntityUid = getIntent().getLongExtra(getString(R.string.extra_entity_uid), NO_ID);
         mFactUid = getIntent().getLongExtra(getString(R.string.extra_fact_uid), NO_ID);
-        mCategory = Category.valueOf(getIntent().getStringExtra(EXTRA_DATA_CATEGORY));
 
         // Ensure that the name field causes the save button to enable / disable.
         ((EditText) findViewById(R.id.textFactName)).addTextChangedListener(new TextWatcher() {
@@ -113,10 +115,17 @@ public class FactEntryActivity extends AppCompatActivity {
         // There needs to be a non-whitespace name.
         boolean isEnabled = (name.toString().trim().length() > 0 && !name.toString().trim().equals(""))
                 // And the selection must provide an output type.
-                && mAdapter.getCurrentSelectionOutputType().isPresent()
-                // And the output type must produce a rate or a one-off expense.
-                // XXXX TODO FIXME: THIS ONLY WORKS FOR INCOME / EXPENSES.
-                && Rate.class.isAssignableFrom(mAdapter.getCurrentSelectionOutputType().get());
+                && mAdapter.getCurrentSelectionOutputType().isPresent();
+
+        // If this is income or expenses, there can only be two types of numbers coming out: rates or one-off events.
+        if (isEnabled) {
+            if (mCategory == Category.Income || mCategory == Category.Expenses) {
+                Class<?> outType = mAdapter.getCurrentSelectionOutputType().get();
+                isEnabled &= Rate.class.isAssignableFrom(outType) || OneOffAmount.class.isAssignableFrom(outType);
+            } else {
+                throw new Error("Unhandled fact category: " + mCategory);
+            }
+        }
 
         // Toggle enabled based on the above criteria.
         findViewById(R.id.buttonSave).setEnabled(isEnabled);
