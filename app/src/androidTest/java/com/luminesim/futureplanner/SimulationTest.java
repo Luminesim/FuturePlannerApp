@@ -1,30 +1,20 @@
 package com.luminesim.futureplanner;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.room.Room;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.work.Data;
-import androidx.work.ListenableWorker;
-import androidx.work.testing.TestListenableWorkerBuilder;
-import androidx.work.testing.TestWorkerBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.luminesim.futureplanner.db.Entity;
 import com.luminesim.futureplanner.db.EntityDao;
 import com.luminesim.futureplanner.db.EntityDatabase;
 import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityFactDetail;
-import com.luminesim.futureplanner.db.EntityFactWithDetails;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.monad.MonadData;
-import com.luminesim.futureplanner.simulation.SimulationWorker;
+import com.luminesim.futureplanner.simulation.CanadianIndividualIncomeSimulation;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -53,7 +40,7 @@ public class SimulationTest {
     private EntityDao dao;
     private EntityWithFacts mEntity;
     private EntityDatabase db;
-    private final double DELTA = 0.00001;
+    private final double DELTA = 500.0;
 
     public void createDb() {
         db = Room.inMemoryDatabaseBuilder(mContext, EntityDatabase.class).allowMainThreadQueries().build();
@@ -69,7 +56,9 @@ public class SimulationTest {
     public void setUp() {
         mContext = ApplicationProvider.getApplicationContext();
         createDb();
+    }
 
+    private EntityWithFacts create120KIncomePerson() {
         // Create test user
         Entity toAdd = Entity.builder().name("User").build();
         long userId = dao.insert(toAdd);
@@ -85,32 +74,113 @@ public class SimulationTest {
         EntityFactDetail incomeFactStep1 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(1).monadJson((new MonadData("IdPerYear")).toJson()).build();
         dao.insert(incomeFactStep0);
         dao.insert(incomeFactStep1);
-        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
-        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
-        dao.insert(expenseFactStep0);
-        dao.insert(expenseFactStep1);
+//        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
+//        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
+//        dao.insert(expenseFactStep0);
+//        dao.insert(expenseFactStep1);
 
-        mEntity = dao.getEntity(userId);
+        return dao.getEntity(userId);
     }
 
+    private EntityWithFacts create50KIncomePerson() {
+        // Create test user
+        Entity toAdd = Entity.builder().name("User").build();
+        long userId = dao.insert(toAdd);
+
+        // Create test facts.
+        EntityFact incomeFact = EntityFact.builder().category(Category.Income).entityUid(userId).name("Work").build();
+        EntityFact expenseFact = EntityFact.builder().category(Category.Expenses).entityUid(userId).name("Food").build();
+        long incomeFactUid = dao.insert(incomeFact);
+        long expenseFactUid = dao.insert(expenseFact);
+
+        // Create test fact details.
+        EntityFactDetail incomeFactStep0 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 50_000.00)).toJson()).build();
+        EntityFactDetail incomeFactStep1 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(1).monadJson((new MonadData("IdPerYear")).toJson()).build();
+        dao.insert(incomeFactStep0);
+        dao.insert(incomeFactStep1);
+//        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
+//        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
+//        dao.insert(expenseFactStep0);
+//        dao.insert(expenseFactStep1);
+
+        return dao.getEntity(userId);
+    }
+
+    private EntityWithFacts create10KIncomePerson() {
+        // Create test user
+        Entity toAdd = Entity.builder().name("User").build();
+        long userId = dao.insert(toAdd);
+
+        // Create test facts.
+        EntityFact incomeFact = EntityFact.builder().category(Category.Income).entityUid(userId).name("Work").build();
+        EntityFact expenseFact = EntityFact.builder().category(Category.Expenses).entityUid(userId).name("Food").build();
+        long incomeFactUid = dao.insert(incomeFact);
+        long expenseFactUid = dao.insert(expenseFact);
+
+        // Create test fact details.
+        EntityFactDetail incomeFactStep0 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 10_000.00)).toJson()).build();
+        EntityFactDetail incomeFactStep1 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(1).monadJson((new MonadData("IdPerYear")).toJson()).build();
+        dao.insert(incomeFactStep0);
+        dao.insert(incomeFactStep1);
+//        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
+//        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
+//        dao.insert(expenseFactStep0);
+//        dao.insert(expenseFactStep1);
+
+        return dao.getEntity(userId);
+    }
+
+    /**
+     * Runs a simple simulation with a single 120K income.
+     * Should be able to calculate this amount.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testSleepWorker() throws Exception {
-        Log.i("RESULT", "User UID is " + mEntity.getEntity().getUid());
-        SimulationWorker worker =
-                (SimulationWorker)TestWorkerBuilder.from(mContext, SimulationWorker.class)
-                        .setInputData(new Data.Builder().putLong(SimulationWorker.DATA_ENTITY_UID, mEntity.getEntity().getUid()).build())
-                        .build();
-
-        // Test hook.
-        worker.setRepo(new EntityRepository(mContext, db));
-
-        ListenableWorker.Result result = worker.startWork().get();
+    public void simpleCAD120KIncome_shouldCalculateCorrectAmount() throws Exception {
+        // Set up the simulation.
+        mEntity = create120KIncomePerson();
+        CanadianIndividualIncomeSimulation job = new CanadianIndividualIncomeSimulation(mContext, mEntity.getEntity().getUid());
+        job.setRepo(new EntityRepository(mContext, db));
+        job.run();
 
         // Ensure that funds at the end of the run are what we expect.
-        assertThat("Expected successful run.", result, is(ListenableWorker.Result.success()));
-        assertEquals("Expected the correct income calculation.", 72_216.76, (Double)worker.getRoot().getNumericSDDiagram("Money").get("Funds"), 100.0);
+        assertEquals("Expected the correct income calculation.", 83_566, (Double)job.getRoot().getNumericSDDiagram("Money").get("Funds"), DELTA);
+    }
 
+    /**
+     * Runs a simple simulation with a single 50K income.
+     * Should be able to calculate this amount.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void simpleCAD50KIncome_shouldCalculateCorrectAmount() throws Exception {
+        // Set up the simulation.
+        mEntity = create50KIncomePerson();
+        CanadianIndividualIncomeSimulation job = new CanadianIndividualIncomeSimulation(mContext, mEntity.getEntity().getUid());
+        job.setRepo(new EntityRepository(mContext, db));
+        job.run();
 
-        Log.i("RESULT", result.toString());
+        // Ensure that funds at the end of the run are what we expect.
+        assertEquals("Expected the correct income calculation.", 38_339, (Double)job.getRoot().getNumericSDDiagram("Money").get("Funds"), DELTA);
+    }
+
+    /**
+     * Runs a simple simulation with a single 10K income.
+     * Should be able to calculate this amount.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void simpleCAD10KIncome_shouldCalculateCorrectAmount() throws Exception {
+        // Set up the simulation.
+        mEntity = create10KIncomePerson();
+        CanadianIndividualIncomeSimulation job = new CanadianIndividualIncomeSimulation(mContext, mEntity.getEntity().getUid());
+        job.setRepo(new EntityRepository(mContext, db));
+        job.run();
+
+        // Ensure that funds at the end of the run are what we expect.
+        assertEquals("Expected the correct income calculation.", 9_507, (Double)job.getRoot().getNumericSDDiagram("Money").get("Funds"), DELTA);
     }
 }

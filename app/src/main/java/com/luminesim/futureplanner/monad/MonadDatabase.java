@@ -19,6 +19,7 @@ import com.luminesim.futureplanner.monad.types.OnDateMonad;
 import org.json.JSONArray;
 
 import java.io.IOException;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -318,6 +319,13 @@ public final class MonadDatabase {
                             Arrays.asList(Category.Income),
                             context.getString(R.string.monad_income_type_other_income),
                             context.getString(R.string.monad_income_type_other_income)
+                    );
+                    INSTANCE.add(
+                            "IdCADUntaxedIncome",
+                            new IncomeTypeMonad(IncomeType.CADUntaxed),
+                            Arrays.asList(Category.Income),
+                            context.getString(R.string.monad_income_type_untaxed_income),
+                            context.getString(R.string.monad_income_type_untaxed_income)
                     );
 
 

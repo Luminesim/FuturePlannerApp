@@ -9,26 +9,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name="com.luminesim.futureplanner.CategoryContentsListActivity"
-            android:label="@string/title_activity_category_contents_list"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
-
-        <activity
-            android:name="com.luminesim.futureplanner.ResultsActivity"
-            android:label="@string/title_activity_results"
-            android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".LandingActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.luminesim.futureplanner.FactEntryActivity">
+        <activity
+            android:name=".CategoryContentsListActivity"
+            android:label="@string/title_activity_category_contents_list"
+            android:theme="@style/AppTheme.NoActionBar" /> <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <activity
+            android:name=".ResultsActivity"
+            android:label="@string/title_activity_results"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity android:name=".FactEntryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>

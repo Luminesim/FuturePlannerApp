@@ -32,8 +32,28 @@
     <string name="extra_entity_uid">com.example.myfirstapp.ENTITY_UID</string>
     <string name="extra_fact_uid">com.example.myfirstapp.EXTRA_FACT_UID</string>
     <string name="monad_per_week_view_text">per week</string>
-    <string name="monad_income_type_other_income">in Other Income</string>
     <string name="monad_ending_view_text"><![CDATA[ending <date>]]></string>
     <string name="button_delete_fact">Delete</string>
     <string name="monad_one_off_view_text"><![CDATA[once on <date>]]></string>
+    <string name="monad_income_type_untaxed_income">in Untaxed Income</string>
+    <string name="monad_income_type_other_income">in Other Income</string>
+    <string name="title_activity_entity_settings">EntitySettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="chart_description_funds_over_time">Funds over Time</string>
+    <string name="chart_legend_funds">Estimated Available Funds</string>
+    <string name="chart_no_data_text">Working on it...</string>
 </resources>

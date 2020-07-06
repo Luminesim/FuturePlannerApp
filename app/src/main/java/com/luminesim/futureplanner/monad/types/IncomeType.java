@@ -11,12 +11,25 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public enum IncomeType {
-    CADOtherIncome(Currency.getInstance("CAD"))
+    /**
+     * The default type of CAD income.
+     */
+    CADOtherIncome(true, Currency.getInstance("CAD")),
+
+    /**
+     * Income that is completely untaxed.
+     * E.g. tax refund from previous year.
+     */
+    CADUntaxed(false, Currency.getInstance("CAD"))
     ;
 
     @Getter
+    private boolean isTaxed;
+
+    @Getter
     private Currency currency;
-    IncomeType(@NonNull Currency currency) {
+    IncomeType(boolean isTaxed, @NonNull Currency currency) {
+        this.isTaxed = isTaxed;
         this.currency = currency;
     }
 
