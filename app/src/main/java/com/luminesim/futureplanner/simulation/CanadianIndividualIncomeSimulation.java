@@ -180,73 +180,78 @@ public class CanadianIndividualIncomeSimulation extends EntityWithFundsSimulatio
                 provincialRatesUpTo.put(45_225.00, 10.5);
                 provincialRatesUpTo.put(129_214.00, 12.5);
                 provincialRatesUpTo.put(Double.MAX_VALUE, 14.5);
-
-
             } else {
                 throw new IllegalStateException("Unsupported year: " + time.getYear());
             }
-        } else {
+
+            // Tax appropriately.
+            double sum = 0;
+            Double floor = 0d;
+
+            // CPP
+            // https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/canada-pension-plan-cpp/cpp-contribution-rates-maximums-exemptions.html
+            double cppBasicPayPeriodExemption = 3500.00;
+            // TODO: DOUBLE THIS IF SELF-EMPLOYED
+            double cppMaximumAnnualEmployeeAndEmployerContribution = 2_898.00;
+            double cppPercent = 5.25;
+            double cppMaximumAnnualPensionableEarnings = 58_700.00;
+            double cppToPay = Math.min(cppMaximumAnnualEmployeeAndEmployerContribution, Math.min(amountPerYear, cppMaximumAnnualPensionableEarnings) * cppPercent/100.0);
+            Log.i("TAX", "CPP is " + cppToPay);
+            sum += cppToPay;
+
+            // EI
+            // https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/manual-calculation-ei.html
+            double eiMaximumAnnualInsurableEarnings = 54_200.00;
+            double eiRatePercent = 1.58;
+            double eiMaximumAnnualEmployeePremium = 856.36;
+            double eiMaximumAnnualEmployerPremium = 1_198.90;
+            double eiToPay = Math.min(eiMaximumAnnualEmployeePremium + eiMaximumAnnualEmployerPremium, Math.min(amountPerYear, eiMaximumAnnualInsurableEarnings) * eiRatePercent/100.0);
+            Log.i("TAX", "EI is " + eiToPay);
+            sum += eiToPay;
+
+            // Provincial rates.
+            double provincialSum = 0d;
+            // TODO: Doublecheck.
+            double provincialExemptAmount = 16_065.00 + cppToPay + eiToPay;
+            floor = provincialExemptAmount;
+            for (Double ceiling : provincialRatesUpTo.keySet()) {
+                double incomeInRange = Math.min(ceiling - floor, amountPerYear - floor);
+                if (incomeInRange > 0) {
+                    provincialSum += incomeInRange * provincialRatesUpTo.get(ceiling) / 100.0;
+                }
+                if (ceiling > floor) {
+                    floor = ceiling;
+                }
+            }
+            Log.d("TAX", "Provincial tax is " + provincialSum);
+            sum += provincialSum;
+
+            // Federal rates.
+            double federalSum = 0;
+            // TODO: Doublecheck.
+            floor = cppToPay + eiToPay + 12_069.00;
+            for (Double ceiling : federalRatesUpTo.keySet()) {
+                double incomeInRange = Math.min(ceiling - floor, amountPerYear - floor);
+                if (incomeInRange > 0) {
+                    federalSum += incomeInRange * federalRatesUpTo.get(ceiling) / 100.0;
+                }
+                if (ceiling > floor) {
+                    floor = ceiling;
+                }
+            }
+            Log.d("TAX", "Federal tax is " + federalSum);
+            sum += federalSum;
+
+            return sum;
+        }
+        // Untaxed income requires no tax.
+        else if (!incomeType.isTaxed()) {
+            return 0;
+        }
+        else {
             throw new IllegalStateException(String.format("Unsupported income type %s for currency %s", incomeType, currency));
         }
 
-        // Tax appropriately.
-        double sum = 0;
-        Double floor = 0d;
 
-        // CPP
-        // https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/canada-pension-plan-cpp/cpp-contribution-rates-maximums-exemptions.html
-        double cppBasicPayPeriodExemption = 3500.00;
-        // TODO: DOUBLE THIS IF SELF-EMPLOYED
-        double cppMaximumAnnualEmployeeAndEmployerContribution = 2_898.00;
-        double cppPercent = 5.25;
-        double cppMaximumAnnualPensionableEarnings = 58_700.00;
-        double cppToPay = Math.min(cppMaximumAnnualEmployeeAndEmployerContribution, Math.min(amountPerYear, cppMaximumAnnualPensionableEarnings) * cppPercent/100.0);
-        Log.i("TAX", "CPP is " + cppToPay);
-        sum += cppToPay;
-
-        // EI
-        // https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/payroll-deductions-contributions/employment-insurance-ei/manual-calculation-ei.html
-        double eiMaximumAnnualInsurableEarnings = 54_200.00;
-        double eiRatePercent = 1.58;
-        double eiMaximumAnnualEmployeePremium = 856.36;
-        double eiMaximumAnnualEmployerPremium = 1_198.90;
-        double eiToPay = Math.min(eiMaximumAnnualEmployeePremium + eiMaximumAnnualEmployerPremium, Math.min(amountPerYear, eiMaximumAnnualInsurableEarnings) * eiRatePercent/100.0);
-        Log.i("TAX", "EI is " + eiToPay);
-        sum += eiToPay;
-
-        // Provincial rates.
-        double provincialSum = 0d;
-        // TODO: Doublecheck.
-        double provincialExemptAmount = 16_065.00 + cppToPay + eiToPay;
-        floor = provincialExemptAmount;
-        for (Double ceiling : provincialRatesUpTo.keySet()) {
-            double incomeInRange = Math.min(ceiling - floor, amountPerYear - floor);
-            if (incomeInRange > 0) {
-                provincialSum += incomeInRange * provincialRatesUpTo.get(ceiling) / 100.0;
-            }
-            if (ceiling > floor) {
-                floor = ceiling;
-            }
-        }
-        Log.d("TAX", "Provincial tax is " + provincialSum);
-        sum += provincialSum;
-
-        // Federal rates.
-        double federalSum = 0;
-        // TODO: Doublecheck.
-        floor = cppToPay + eiToPay + 12_069.00;
-        for (Double ceiling : federalRatesUpTo.keySet()) {
-            double incomeInRange = Math.min(ceiling - floor, amountPerYear - floor);
-            if (incomeInRange > 0) {
-                federalSum += incomeInRange * federalRatesUpTo.get(ceiling) / 100.0;
-            }
-            if (ceiling > floor) {
-                floor = ceiling;
-            }
-        }
-        Log.d("TAX", "Federal tax is " + federalSum);
-        sum += federalSum;
-
-        return sum;
     }
 }

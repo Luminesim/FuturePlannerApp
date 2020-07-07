@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:focusedByDefault="true"
-            android:inputType="number" />
+            android:inputType="number|numberDecimal" />
 
     </LinearLayout>
 </FrameLayout>

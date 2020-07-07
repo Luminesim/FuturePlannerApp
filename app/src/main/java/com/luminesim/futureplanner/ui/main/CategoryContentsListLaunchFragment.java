@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.luminesim.futureplanner.CategoryContentsListActivity;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.Category;
@@ -67,6 +69,12 @@ public class CategoryContentsListLaunchFragment extends Fragment {
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
                 startActivity(intent);
             });
+
+
+            // Load ads.
+            AdView mAdView = container.findViewById(R.id.adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
         });
         return root;
     }

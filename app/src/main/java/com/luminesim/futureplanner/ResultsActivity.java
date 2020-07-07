@@ -1,8 +1,13 @@
 package com.luminesim.futureplanner;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.AttributeSet;
+import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
@@ -16,6 +21,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.material.tabs.TabLayout;
 import com.luminesim.futureplanner.simulation.CanadianIndividualIncomeSimulation;
 import com.luminesim.futureplanner.ui.main.SectionsPagerAdapter;

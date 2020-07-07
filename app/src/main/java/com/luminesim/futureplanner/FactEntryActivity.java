@@ -149,6 +149,7 @@ public class FactEntryActivity extends AppCompatActivity {
                 runOnUiThread(() -> ((EditText) findViewById(R.id.textFactName)).setText(data.getFact().getName()));
 
                 // Enter the details one by one.
+                runOnUiThread(() -> ((EditText)findViewById(R.id.commandEditText)).setText(""));
                 data.getDetails().forEach(detail -> {
                     runOnUiThread(() -> mAdapter.triggerCallbackAndUpdateMonadList(detail));
                 });

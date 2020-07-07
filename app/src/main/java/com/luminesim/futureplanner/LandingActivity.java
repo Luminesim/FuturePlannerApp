@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.luminesim.futureplanner.db.Entity;
 import com.luminesim.futureplanner.db.EntityRepository;
 
@@ -20,6 +23,8 @@ public class LandingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing);
 
+        // Set up monetization.
+        MobileAds.initialize(this, status -> {});
 
         // Create the entity repo.
         mEntities = new EntityRepository(getApplicationContext());

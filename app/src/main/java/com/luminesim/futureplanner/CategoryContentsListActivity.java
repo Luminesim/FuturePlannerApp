@@ -3,6 +3,7 @@ package com.luminesim.futureplanner;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.google.android.material.chip.Chip;
 import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadDatabase;
@@ -15,6 +16,8 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.util.Comparator;
 
 public class CategoryContentsListActivity extends AppCompatActivity {
 
@@ -60,6 +63,7 @@ public class CategoryContentsListActivity extends AppCompatActivity {
                     ewf.getFacts()
                             .stream()
                             .filter(ef -> ef.getFact().getCategory().name().equals(getString(mCategoryTextId)))
+                            .sorted(Comparator.comparing(ef -> ef.getFact().getName()))
                             .forEach(ef -> {
                                 EntityFact fact = ef.getFact();
                                 View toAdd = getLayoutInflater().inflate(R.layout.monad_selection_layout, null);
@@ -68,10 +72,10 @@ public class CategoryContentsListActivity extends AppCompatActivity {
                                 StringBuilder text = new StringBuilder();
                                 text.append(fact.getName()).append(": ");
                                 ef.getDetails().forEach(detail -> text.append(mData.getFormattedStringFromJson(detail.getMonadJson())).append(" "));
-                                ((TextView) toAdd.findViewById(R.id.label)).setText(text.toString().trim());
+                                ((Chip) toAdd.findViewById(R.id.chip)).setText(text.toString().trim());
 
                                 // If the fact is clicked, update it.
-                                toAdd.setOnClickListener(l -> {
+                                toAdd.findViewById(R.id.chip).setOnClickListener(l -> {
                                     updateFact(fact.getUid());
                                 });
                                 runOnUiThread(() -> mList.addView(toAdd));
