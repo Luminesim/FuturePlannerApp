@@ -18,7 +18,7 @@ import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityFactWithDetails;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadData;
-import com.luminesim.futureplanner.monad.UserFacingMonadList;
+import com.luminesim.futureplanner.monad.MonadSelectionView;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class FactEntryActivity extends AppCompatActivity {
     public static final int RESULT_OK_FACT_DELETED = 100;
 
     private RecyclerView recyclerView;
-    private UserFacingMonadList mAdapter;
+    private MonadSelectionView mAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private List<MonadData> data = new ArrayList<>();
     private EntityRepository mEntities;
@@ -63,7 +63,7 @@ public class FactEntryActivity extends AppCompatActivity {
 
         // specify an adapter (see also next example)
         EditText editText = findViewById(R.id.commandEditText);
-        mAdapter = new UserFacingMonadList(
+        mAdapter = new MonadSelectionView(
                 this,
                 mCategory,
                 (formattedString, monadId, parameters) -> {

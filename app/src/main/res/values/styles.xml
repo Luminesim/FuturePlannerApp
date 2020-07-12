@@ -5,6 +5,9 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="tabSelectedTextColor">@color/lightTextOnAccent</item>
+        <item name="tabTextColor">@color/colorPrimaryDark</item>
+        <item name="android:windowBackground">@drawable/slide_background_light</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -15,5 +18,11 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
+    <style name="AppTheme.RoundedSelection" parent="AppTheme">
+        <item name="android:textViewStyle">@style/AppTheme.RoundedSelection.TextView</item>
+    </style>
+    <style name="AppTheme.RoundedSelection.TextView" parent="AppTheme.NoActionBar">
+        <item name="android:textColor">@color/lightTextOnAccent</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+    </style>
 </resources>

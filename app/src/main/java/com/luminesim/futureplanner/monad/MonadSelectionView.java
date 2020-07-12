@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.chip.Chip;
 import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityFactDetail;
@@ -31,7 +30,7 @@ import lombok.NonNull;
 /**
  * Allows monads to be navigated.
  */
-public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadList.PredictiveTextHolder> {
+public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.PredictiveTextHolder> {
     private final Callback mCallback;
     private final Category mCategory;
     private List<String> mCurrentPredictiveViews = new ArrayList<>();
@@ -82,7 +81,7 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public UserFacingMonadList(AppCompatActivity c, Category currentCategory, Callback callback) {
+    public MonadSelectionView(AppCompatActivity c, Category currentCategory, Callback callback) {
 
         this.mCallback = callback;
         this.mData = MonadDatabase.getDatabase(c);
@@ -118,7 +117,7 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
         // create a new view
         View v = LayoutInflater
                 .from(parent.getContext())
-                .inflate(R.layout.monad_selection_layout, parent, false);
+                .inflate(R.layout.view_selectable, parent, false);
         PredictiveTextHolder vh = new PredictiveTextHolder(v);
 
         vh.itemView.findViewById(R.id.chip).setOnClickListener(v1 -> {
@@ -212,7 +211,7 @@ public class UserFacingMonadList extends RecyclerView.Adapter<UserFacingMonadLis
     public void onBindViewHolder(PredictiveTextHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        ((Chip)holder.view.findViewById(R.id.chip)).setText(mCurrentPredictiveViews.get(position));
+        ((TextView)holder.view.findViewById(R.id.chip)).setText(mCurrentPredictiveViews.get(position));
         holder.monad = mCurrentOptions.get(position);
     }
 

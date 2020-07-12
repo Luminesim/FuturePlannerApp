@@ -13,21 +13,21 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.luminesim.futureplanner.CategoryContentsListActivity;
+import com.luminesim.futureplanner.FactListActivity;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.Category;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class CategoryContentsListLaunchFragment extends Fragment {
+public class FactListActivityLauncher extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private PageViewModel pageViewModel;
 
-    public static CategoryContentsListLaunchFragment newInstance(int index) {
-        CategoryContentsListLaunchFragment fragment = new CategoryContentsListLaunchFragment();
+    public static FactListActivityLauncher newInstance(int index) {
+        FactListActivityLauncher fragment = new FactListActivityLauncher();
         Bundle bundle = new Bundle();
         bundle.putInt(ARG_SECTION_NUMBER, index);
         fragment.setArguments(bundle);
@@ -49,23 +49,23 @@ public class CategoryContentsListLaunchFragment extends Fragment {
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_results, container, false);
+        View root = inflater.inflate(R.layout.fragment_result_chart_and_buttons, container, false);
         pageViewModel.getText().observe(getViewLifecycleOwner(), s -> {
 
             Log.i(getClass().getCanonicalName(), "Entity ID in fragment is " + getActivity().getIntent().getExtras());
 
             container.findViewById(R.id.buttonIncome).setOnClickListener(view -> {
-                Intent intent = new Intent(getContext(), CategoryContentsListActivity.class);
-                intent.putExtra(CategoryContentsListActivity.LIST_TITLE, R.string.button_income);
-                intent.putExtra(CategoryContentsListActivity.LIST_SELECTION, Category.Income);
+                Intent intent = new Intent(getContext(), FactListActivity.class);
+                intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_income);
+                intent.putExtra(FactListActivity.LIST_SELECTION, Category.Income);
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
                 startActivity(intent);
             });
 
             container.findViewById(R.id.buttonExpenses).setOnClickListener(view -> {
-                Intent intent = new Intent(getContext(), CategoryContentsListActivity.class);
-                intent.putExtra(CategoryContentsListActivity.LIST_TITLE, R.string.button_expenses);
-                intent.putExtra(CategoryContentsListActivity.LIST_SELECTION, Category.Expenses);
+                Intent intent = new Intent(getContext(), FactListActivity.class);
+                intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_expenses);
+                intent.putExtra(FactListActivity.LIST_SELECTION, Category.Expenses);
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
                 startActivity(intent);
             });

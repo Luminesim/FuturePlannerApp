@@ -9,15 +9,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LandingActivity">
+        <activity android:name=".LandingActivity"
+            android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".CategoryContentsListActivity"
+            android:name=".FactListActivity"
             android:label="@string/title_activity_category_contents_list"
             android:theme="@style/AppTheme.NoActionBar" />
 
@@ -32,11 +32,9 @@
             android:label="@string/title_activity_results"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity android:name=".FactEntryActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
+        <activity
+            android:name=".FactEntryActivity"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

@@ -3,7 +3,6 @@ package com.luminesim.futureplanner;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.google.android.material.chip.Chip;
 import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadDatabase;
@@ -19,7 +18,7 @@ import android.widget.TextView;
 
 import java.util.Comparator;
 
-public class CategoryContentsListActivity extends AppCompatActivity {
+public class FactListActivity extends AppCompatActivity {
 
     public static final String LIST_SELECTION = "LIST_SELECTION";
     public static final String LIST_TITLE = "LIST_TITLE";
@@ -32,7 +31,7 @@ public class CategoryContentsListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category_contents_list);
+        setContentView(R.layout.activity_fact_list);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mData = MonadDatabase.getDatabase(this);
@@ -66,13 +65,13 @@ public class CategoryContentsListActivity extends AppCompatActivity {
                             .sorted(Comparator.comparing(ef -> ef.getFact().getName()))
                             .forEach(ef -> {
                                 EntityFact fact = ef.getFact();
-                                View toAdd = getLayoutInflater().inflate(R.layout.monad_selection_layout, null);
+                                View toAdd = getLayoutInflater().inflate(R.layout.view_selectable, null);
 
                                 // Build up the string to display.
                                 StringBuilder text = new StringBuilder();
                                 text.append(fact.getName()).append(": ");
                                 ef.getDetails().forEach(detail -> text.append(mData.getFormattedStringFromJson(detail.getMonadJson())).append(" "));
-                                ((Chip) toAdd.findViewById(R.id.chip)).setText(text.toString().trim());
+                                ((TextView) toAdd.findViewById(R.id.chip)).setText(text.toString().trim());
 
                                 // If the fact is clicked, update it.
                                 toAdd.findViewById(R.id.chip).setOnClickListener(l -> {

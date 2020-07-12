@@ -7,12 +7,12 @@
     android:layout_weight="1"
     android:text="TextView" >
 
-    <com.google.android.material.chip.Chip
+    <TextView
         android:id="@+id/chip"
+        style="@style/AppTheme.RoundedSelection.TextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:checkable="false"
         android:text="test"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
