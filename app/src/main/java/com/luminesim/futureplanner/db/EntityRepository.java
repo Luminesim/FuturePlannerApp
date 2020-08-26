@@ -41,7 +41,17 @@ public class EntityRepository {
 
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
     // that you're not doing any long running operations on the main thread, blocking the UI.
-    public void insert(Entity entity) {
+//    public void insert(Entity entity) {
+//        submit(() -> {
+//            mEntityDao.insert(entity);
+//        });
+//    }
+
+    /**
+     * Inserts an entity with any associated parameters.
+     * @param entity
+     */
+    public void insert(EntityWithParameters entity) {
         submit(() -> {
             mEntityDao.insert(entity);
         });
@@ -121,5 +131,11 @@ public class EntityRepository {
      */
     private void submit(@NonNull Runnable asyncAction) {
         EntityDatabase.databaseWriteExecutor.execute(asyncAction);
+    }
+
+    public void updateParameter(long entityUid, EntityParameter param) {
+        submit(() -> {
+            mEntityDao.insert(param);
+        });
     }
 }

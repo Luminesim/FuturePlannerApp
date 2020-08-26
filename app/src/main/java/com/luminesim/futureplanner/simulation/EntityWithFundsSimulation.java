@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityRepository;
+import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
@@ -36,6 +37,7 @@ import ca.anthrodynamics.indes.lang.Monad;
 import ca.anthrodynamics.indes.lang.Rate;
 import ca.anthrodynamics.indes.lang.ScheduledRate;
 import ca.anthrodynamics.indes.sd.SDDiagram;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,12 +60,22 @@ public abstract class EntityWithFundsSimulation implements Runnable {
     private Lock workLock = new ReentrantLock();
     private Condition workDone = workLock.newCondition();
 
+    @Getter
+    private int numberOfDaysToRun;
+
     /**
      * @param appContext The application {@link Context}
+     * @pre numberOfDaysToRun >= 1
      */
-    public EntityWithFundsSimulation(@NonNull Context appContext, @NonNull long entityUid) {
+    public EntityWithFundsSimulation(int numberOfDaysToRun, @NonNull Context appContext, @NonNull long entityUid) {
+
+        // Sanity check.
+        if (numberOfDaysToRun <= 0) {
+            throw new IllegalArgumentException("Number of days to run the simulation must be positive.");
+        }
 
         // Record the entity and database.
+        this.numberOfDaysToRun = numberOfDaysToRun;
         db = MonadDatabase.getDatabase(appContext);
         repo = new EntityRepository(appContext);
         this.entityUid = entityUid;
@@ -153,12 +165,10 @@ public abstract class EntityWithFundsSimulation implements Runnable {
             // NOTE: DT MUST BE EVEN -- SEE BELOW.
             double dt = 1;
             final double DAY = 1 * dt;
-            final double YEAR = 1 / (365.0 * DAY);
-            double endTime = 365.0 * DAY;
-            double assumedTaxPercentForOneOffIncome = 33.0;
+            double endTime = numberOfDaysToRun * DAY;
 
             // Construct the simulation.
-            constructSimulation(root, startTime, ongoingIncome, oneOffIncome, ongoingExpenses, oneOffExpenses);
+            constructSimulation(entity, root, startTime, ongoingIncome, oneOffIncome, ongoingExpenses, oneOffExpenses);
 
             // Run the simulation.
             engine.start();
@@ -198,7 +208,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
      *
      * @param root
      */
-    protected abstract void constructSimulation(@NonNull Agent root, @lombok.NonNull LocalDateTime startTime, @NonNull List<ComputableMonad> ongoingIncome, @NonNull List<ComputableMonad> oneOffIncome, @NonNull List<ComputableMonad> ongoingExpenses, @NonNull List<ComputableMonad> oneOffExpenses);
+    protected abstract void constructSimulation(@NonNull EntityWithFacts entity, @NonNull Agent root, @lombok.NonNull LocalDateTime startTime, @NonNull List<ComputableMonad> ongoingIncome, @NonNull List<ComputableMonad> oneOffIncome, @NonNull List<ComputableMonad> ongoingExpenses, @NonNull List<ComputableMonad> oneOffExpenses);
 
     /**
      * @param income

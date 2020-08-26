@@ -24,7 +24,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@ForeignKey(entity = com.luminesim.futureplanner.db.Entity.class, parentColumns = "uid", childColumns = "entity_fact_id")
+@ForeignKey(entity = com.luminesim.futureplanner.db.Entity.class, parentColumns = "uid", childColumns = "entity_fact_uid")
 public class EntityFactDetail {
 
     /**

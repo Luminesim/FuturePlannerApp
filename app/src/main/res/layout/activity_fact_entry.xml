@@ -73,6 +73,7 @@
         android:ems="10"
         android:focusable="false"
         android:gravity="start|top"
+        android:hint="@string/hint_select_first_option"
         android:inputType="none|textMultiLine"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

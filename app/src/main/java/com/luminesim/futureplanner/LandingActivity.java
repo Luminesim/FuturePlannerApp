@@ -10,7 +10,17 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.luminesim.futureplanner.db.Entity;
+import com.luminesim.futureplanner.db.EntityParameter;
 import com.luminesim.futureplanner.db.EntityRepository;
+import com.luminesim.futureplanner.db.EntityWithParameters;
+import com.luminesim.futureplanner.simulation.CanadianIndividualIncomeSimulation;
+import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Shows a splashscreen and creates the default entity if it doesn't exist.
@@ -35,7 +45,16 @@ public class LandingActivity extends AppCompatActivity {
             // No entity? Create it.
             if (data.isEmpty()) {
                 Log.i("Setup", "No entities. Adding a user.");
-                mEntities.insert(Entity.builder().name("User").build());
+                EntityParameter[] parameters = {
+                        new EntityParameter(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS, "0.00")
+                };
+                EntityWithParameters ewp = new EntityWithParameters();
+                ewp.setEntity(Entity.builder()
+                        .name("User")
+                        .type(SimpleIndividualIncomeSimulation.ENTITY_TYPE)
+                        .build());
+                ewp.setParameters(Arrays.asList(parameters));
+                mEntities.insert(ewp);
             }
             else {
 

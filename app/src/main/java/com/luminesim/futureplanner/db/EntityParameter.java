@@ -2,11 +2,8 @@ package com.luminesim.futureplanner.db;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
-import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
-
-import com.luminesim.futureplanner.Category;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,18 +11,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-/**
- * A fact about an entity.
- * E.g. the entity has an income source named "Work"
- */
-@Entity(tableName = "entity_facts")
+@androidx.room.Entity(tableName = "entity_parameters")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @ForeignKey(entity = com.luminesim.futureplanner.db.Entity.class, parentColumns = "uid", childColumns = "entity_uid")
-public class EntityFact {
+public class EntityParameter {
+
+    public EntityParameter(@NonNull String name, @NonNull String value) {
+        this.name = name;
+        this.value = value;
+    }
 
     /**
      * Our UID.
@@ -33,22 +31,22 @@ public class EntityFact {
     @PrimaryKey(autoGenerate = true)
     private long uid;
 
+    /**
+     * The UID of the entity using this parameter.
+     */
     @ColumnInfo(name="entity_uid")
     @NonNull
     private long entityUid;
 
     /**
-     * The use of this knowledge, e.g. for income calculation
-     * @see Category
+     * The name of the parameter.
      */
-    @ColumnInfo(name = "category")
-    @NonNull
-    private Category category;
-
-    /**
-     * The (possibly non-unique) name of the knowledge, e.g. "Travel"
-     */
-    @ColumnInfo(name = "name")
     @NonNull
     private String name;
+
+    /**
+     * The value of the parameter.
+     */
+    @NonNull
+    private String value;
 }

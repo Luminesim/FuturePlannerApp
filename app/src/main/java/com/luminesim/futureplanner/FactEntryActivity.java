@@ -20,6 +20,7 @@ import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadData;
 import com.luminesim.futureplanner.monad.MonadSelectionView;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
+import com.luminesim.futureplanner.ui.main.ResultChartAndButtonsFragment;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -208,7 +209,7 @@ public class FactEntryActivity extends AppCompatActivity {
                 Intent out = new Intent();
                 EditText editText = findViewById(R.id.commandEditText);
                 out.putExtra(EXTRA_FORMATTED_TEXT, editText.getText().toString());
-                out.putExtra(ResultsActivity.EXTRA_SIMULATION_FACTS_CHANGED, true);
+                out.putExtra(ResultChartAndButtonsFragment.EXTRA_SIMULATION_FACTS_CHANGED, true);
                 out.putExtra(EXTRA_NAME, name);
                 setResult(RESULT_OK, out);
                 finish();
@@ -245,7 +246,7 @@ public class FactEntryActivity extends AppCompatActivity {
 
         // All done.
         Intent out = new Intent();
-        out.putExtra(ResultsActivity.EXTRA_SIMULATION_FACTS_CHANGED, simulationInputsChanged);
+        out.putExtra(ResultChartAndButtonsFragment.EXTRA_SIMULATION_FACTS_CHANGED, simulationInputsChanged);
         setResult(RESULT_OK_FACT_DELETED, out);
         finish();
     }

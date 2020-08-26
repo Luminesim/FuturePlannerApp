@@ -24,4 +24,7 @@ public class Entity {
     @ColumnInfo(name = "name")
     @NonNull
     private String name;
+
+    @NonNull
+    private String type;
 }

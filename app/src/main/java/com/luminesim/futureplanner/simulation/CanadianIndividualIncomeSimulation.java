@@ -3,6 +3,7 @@ package com.luminesim.futureplanner.simulation;
 import android.content.Context;
 import android.util.Log;
 
+import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
@@ -26,27 +27,23 @@ import ca.anthrodynamics.indes.lang.Monad;
 import ca.anthrodynamics.indes.sd.SDDiagram;
 import lombok.NonNull;
 
+@Deprecated
 public class CanadianIndividualIncomeSimulation extends EntityWithFundsSimulation {
 
-    private double mInitialFunds;
+    public static final String ENTITY_TYPE = "CanadianIndividual";
 
-    /**
-     * @param appContext The application {@link Context}
-     */
-    public CanadianIndividualIncomeSimulation(double initialFunds, @NonNull Context appContext, @NonNull long entityUid) {
-        super(appContext, entityUid);
-        this.mInitialFunds = initialFunds;
-    }
+    public static String PARAMETER_PROVINCE = "Province";
+    public static String PARAMETER_INITIAL_FUNDS = "Initial Funds";
 
     /**
      * @param appContext The application {@link Context}
      */
     public CanadianIndividualIncomeSimulation(@NonNull Context appContext, @NonNull long entityUid) {
-        this(0.0, appContext, entityUid);
+        super(-1, appContext, entityUid);
     }
 
     @Override
-    protected void constructSimulation(@NonNull Agent root, @NonNull LocalDateTime startTime, @NonNull List<ComputableMonad> ongoingIncome, @NonNull List<ComputableMonad> oneOffIncome, @NonNull List<ComputableMonad> ongoingExpenses, @NonNull List<ComputableMonad> oneOffExpenses) {
+    protected void constructSimulation(@NonNull EntityWithFacts entity, @NonNull Agent root, @NonNull LocalDateTime startTime, @NonNull List<ComputableMonad> ongoingIncome, @NonNull List<ComputableMonad> oneOffIncome, @NonNull List<ComputableMonad> ongoingExpenses, @NonNull List<ComputableMonad> oneOffExpenses) {
         // Build the simulation.
         // NOTE: DT MUST BE EVEN -- SEE BELOW.
         double dt = 1;
@@ -54,13 +51,19 @@ public class CanadianIndividualIncomeSimulation extends EntityWithFundsSimulatio
         final double YEAR = 1 / (365.0 * DAY);
         double assumedTaxPercentForOneOffIncome = 33.0;
 
+        // Pull out details.
+        double initialFunds = Double.parseDouble(entity.getParameter(PARAMETER_INITIAL_FUNDS).get());
+        if (1 == 1) {
+            throw new RuntimeException("you updated this so entities have parameters, do check.");
+        }
+
         // Create the basic model.
         final String Funds = "Funds";
         final String WithheldFunds = "Withheld Funds";
         SDDiagram<Double> sd = root.addSDDiagram("Money", dt)
                 .addStock("Taxable Income: " + IncomeType.CADOtherIncome, 0.00)
                 .addStock(WithheldFunds, 0.00)
-                .addStock(Funds, mInitialFunds)
+                .addStock(Funds, initialFunds)
                 .addFlow("Expenses").from("Funds").toVoid().at((funds, nil) -> getTotalFlow(root.getEngine(), startTime, ongoingExpenses));
         ;
 

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public enum IncomeType {
+
     /**
      * The default type of CAD income.
      */
@@ -28,7 +29,7 @@ public enum IncomeType {
 
     @Getter
     private Currency currency;
-    IncomeType(boolean isTaxed, @NonNull Currency currency) {
+    IncomeType(boolean isTaxed, Currency currency) {
         this.isTaxed = isTaxed;
         this.currency = currency;
     }

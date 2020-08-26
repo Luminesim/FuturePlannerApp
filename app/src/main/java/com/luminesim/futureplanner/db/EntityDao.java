@@ -51,6 +51,18 @@ public interface EntityDao {
 
     @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insert(EntityParameter parameter);
+
+    @Transaction
+    default long insert(EntityWithParameters ewp) {
+        long uid = insert(ewp.getEntity());
+        ewp.getParameters().forEach(param -> param.setEntityUid(uid));
+        ewp.getParameters().forEach(this::insert);
+        return uid;
+    }
+
+    @Transaction
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(EntityFact fact);
 
     @Transaction
