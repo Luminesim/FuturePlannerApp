@@ -313,20 +313,20 @@ public final class MonadDatabase {
                                 return template.withParameters(ld.atTime(0, 0));
                             }
                     );
-                    INSTANCE.add(
-                            "IdCADOtherIncome",
-                            new IncomeTypeMonad(IncomeType.CADOtherIncome),
-                            Arrays.asList(Category.Income),
-                            context.getString(R.string.monad_income_type_other_income),
-                            context.getString(R.string.monad_income_type_other_income)
-                    );
-                    INSTANCE.add(
-                            "IdCADUntaxedIncome",
-                            new IncomeTypeMonad(IncomeType.CADUntaxed),
-                            Arrays.asList(Category.Income),
-                            context.getString(R.string.monad_income_type_untaxed_income),
-                            context.getString(R.string.monad_income_type_untaxed_income)
-                    );
+//                    INSTANCE.add(
+//                            "IdCADOtherIncome",
+//                            new IncomeTypeMonad(IncomeType.CADOtherIncome),
+//                            Arrays.asList(Category.Income),
+//                            context.getString(R.string.monad_income_type_other_income),
+//                            context.getString(R.string.monad_income_type_other_income)
+//                    );
+//                    INSTANCE.add(
+//                            "IdCADUntaxedIncome",
+//                            new IncomeTypeMonad(IncomeType.CADUntaxed),
+//                            Arrays.asList(Category.Income),
+//                            context.getString(R.string.monad_income_type_untaxed_income),
+//                            context.getString(R.string.monad_income_type_untaxed_income)
+//                    );
 
 
                 }

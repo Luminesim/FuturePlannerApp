@@ -5,6 +5,7 @@
     <color name="colorAccent">#37A1D1</color>
     <color name="lightTextOnAccent">#ffffff</color>
     <color name="canvasColor">#ffffff</color>
+    <color name="dimCanvasColor">#ddeeee</color>
     <color name="selectionColor">#b7e1f5</color>
 
 </resources>

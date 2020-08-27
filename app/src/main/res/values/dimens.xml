@@ -7,4 +7,8 @@
     <dimen name="appbar_padding_top">8dp</dimen>
     <dimen name="inline_padding">4</dimen>
     <dimen name="luminesim_horizontal_button_margin">4dp</dimen>
+    <dimen name="selectable_elevation">4dp</dimen>
+    <dimen name="padding_edit_text">2dp</dimen>
+    <dimen name="constraint_spacing_smallest">2dp</dimen>
+    <dimen name="padding_edit_text_one_line">4dp</dimen>
 </resources>

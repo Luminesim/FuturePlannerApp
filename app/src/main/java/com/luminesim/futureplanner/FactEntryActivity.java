@@ -221,11 +221,11 @@ public class FactEntryActivity extends AppCompatActivity {
      * Called when the user taps the clear button
      */
     public void clearSelection(@NonNull View view) {
-        EditText editText = (EditText) findViewById(R.id.commandEditText);
+        EditText editText = findViewById(R.id.commandEditText);
         editText.setText("");
         data.clear();
-        setSaveButtonState();
         mAdapter.restartSelection();
+        setSaveButtonState();
     }
 
     /**

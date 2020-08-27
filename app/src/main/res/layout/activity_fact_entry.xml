@@ -6,31 +6,62 @@
     android:layout_height="match_parent"
     tools:context=".FactEntryActivity">
 
+    <TextView
+        android:id="@+id/textFactLabel3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/label_amount_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <EditText
         android:id="@+id/textFactName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/constraint_spacing_smallest"
         android:layout_marginEnd="16dp"
         android:background="@color/canvasColor"
+        android:elevation="@dimen/selectable_elevation"
         android:hint="@string/hint_enter_name"
+        android:includeFontPadding="true"
         android:inputType="textAutoCorrect|textCapSentences|textAutoComplete|textCapWords"
+        android:padding="@dimen/padding_edit_text_one_line"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textFactLabel3" />
+
+    <TextView
+        android:id="@+id/textFactLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/label_amount_preview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textFactName" />
 
     <LinearLayout
         android:id="@+id/linearLayout4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/commandEditText">
+        app:layout_constraintStart_toStartOf="parent">
 
         <Button
             android:id="@+id/buttonSave"
@@ -65,29 +96,50 @@
     <EditText
         android:id="@+id/commandEditText"
         android:layout_width="0dp"
-        android:layout_height="97dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/constraint_spacing_smallest"
         android:layout_marginEnd="16dp"
         android:background="@color/canvasColor"
+        android:elevation="@dimen/selectable_elevation"
         android:ems="10"
         android:focusable="false"
         android:gravity="start|top"
         android:hint="@string/hint_select_first_option"
         android:inputType="none|textMultiLine"
+        android:minLines="@integer/min_lines_long_edit_text"
+        android:padding="@dimen/padding_edit_text"
+        android:textColor="?android:attr/textColorHint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textFactName" />
+        app:layout_constraintTop_toBottomOf="@+id/textFactLabel" />
+
+    <TextView
+        android:id="@+id/textFactLabel2"
+        android:layout_width="0dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/label_remaining_options"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/commandEditText" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/predictive_option_list"
-        android:layout_width="379dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="@dimen/constraint_spacing_smallest"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
+        app:layout_constraintTop_toBottomOf="@+id/textFactLabel2">
 
     </androidx.recyclerview.widget.RecyclerView>
 </androidx.constraintlayout.widget.ConstraintLayout>

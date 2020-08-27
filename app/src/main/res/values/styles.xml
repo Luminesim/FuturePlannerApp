@@ -22,7 +22,7 @@
         <item name="android:textViewStyle">@style/AppTheme.RoundedSelection.TextView</item>
     </style>
     <style name="AppTheme.RoundedSelection.TextView" parent="AppTheme.NoActionBar">
-        <item name="android:textColor">@color/lightTextOnAccent</item>
+        <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:background">@drawable/rounded_corner</item>
     </style>
 </resources>

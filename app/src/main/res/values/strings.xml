@@ -62,6 +62,9 @@
     <string name="hint_select_first_option">Tap an option below to get started (try \"amount!\")</string>
     <string name="label_run_duration">Run for:</string>
     <string name="button_start">Start</string>
+    <string name="label_amount_preview">Amount Will Be:</string>
+    <string name="label_remaining_options">Remaining Options:</string>
+    <string name="label_amount_name">Name:</string>
 
     <string-array name="canada_tax_region_array">
         <item>Alberta</item>
