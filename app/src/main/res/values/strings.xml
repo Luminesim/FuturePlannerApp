@@ -65,6 +65,7 @@
     <string name="label_amount_preview">Amount Will Be:</string>
     <string name="label_remaining_options">Remaining Options:</string>
     <string name="label_amount_name">Name:</string>
+    <string name="label_results">Results:</string>
 
     <string-array name="canada_tax_region_array">
         <item>Alberta</item>

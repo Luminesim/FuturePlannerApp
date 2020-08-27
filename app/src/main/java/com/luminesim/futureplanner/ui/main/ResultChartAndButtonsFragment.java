@@ -3,10 +3,13 @@ package com.luminesim.futureplanner.ui.main;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -17,6 +20,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -102,6 +106,9 @@ public class ResultChartAndButtonsFragment extends Fragment {
                 mAmount.setText(initialFunds);
                 Log.i("FUNDS", "initialFunds: " + initialFunds);
                 mChart.setNoDataText("Tap start button");
+
+                // Run the simulation.
+                onStartButtonPressed(getView());
             });
         });
     }
@@ -198,11 +205,25 @@ public class ResultChartAndButtonsFragment extends Fragment {
                                 }
                             }
                     );
-                    mChart.getXAxis().setLabelRotationAngle(-45);
+//                    mChart.getXAxis().setLabelRotationAngle(-45);
                     mChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+                    mChart.getXAxis().setLabelRotationAngle(-30);
 
                     // Redraw.
                     mChart.invalidate();
+//                    mRunner.submit(() -> {
+//                        try {
+//                            Thread.sleep(1000);
+//
+//
+//                            // Redraw.
+//                            getActivity().runOnUiThread(() ->
+//                                    mChart.invalidate()
+//                            );
+//                        } catch (Throwable t) {
+//                            Log.e("Error", "Problem sleeping while invalidating.", t);
+//                        }
+//                    });
                 });
             } catch (Throwable t) {
                 throw t;
@@ -271,6 +292,26 @@ public class ResultChartAndButtonsFragment extends Fragment {
 
 
             container.findViewById(R.id.startButton).setOnClickListener(this::onStartButtonPressed);
+
+//            ((EditText)container.findViewById(R.id.initialFundsEditText)).addTextChangedListener(new TextWatcher() {
+//                @Override
+//                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//                }
+//
+//                @Override
+//                public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//                    // Invalidate the chart.
+//                    mChart.setData(null);
+//                    mChart.setNoDataText("Tap start to re-run");
+//                }
+//
+//                @Override
+//                public void afterTextChanged(Editable s) {
+//
+//                }
+//            });
 
 
             // Load ads.

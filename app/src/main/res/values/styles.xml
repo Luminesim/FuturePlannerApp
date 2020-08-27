@@ -25,4 +25,7 @@
         <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:background">@drawable/rounded_corner</item>
     </style>
+    <style name="AppTheme.SelectableText" parent="AppTheme.NoActionBar">
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
 </resources>

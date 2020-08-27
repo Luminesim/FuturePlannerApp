@@ -12,14 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:background="@color/canvasColor"
+        android:elevation="@dimen/selectable_elevation"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -99,19 +100,25 @@
                 android:layout_height="wrap_content"
                 android:gravity="left"
                 android:text="@string/label_initial_funds"
-                android:textSize="14sp" />
+                android:textSize="18sp" />
 
             <EditText
                 android:id="@+id/initialFundsEditText"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@color/canvasColor"
+                android:elevation="@dimen/selectable_elevation"
                 android:inputType="numberDecimal"
-                android:textSize="14sp" />
+                android:paddingHorizontal="@dimen/padding_edit_text_one_line"
+                android:paddingVertical="@dimen/padding_edit_text_one_line"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp" />
         </TableRow>
 
         <TableRow
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/padding_edit_text_one_line">
 
             <TextView
                 android:id="@+id/textView3"
@@ -119,24 +126,43 @@
                 android:layout_height="wrap_content"
                 android:gravity="left"
                 android:text="@string/label_run_duration"
-                android:textSize="14sp" />
+                android:textSize="18sp" />
 
             <Spinner
                 android:id="@+id/runDurationSpinner"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@color/canvasColor"
+                android:elevation="@dimen/selectable_elevation"
                 android:entries="@array/default_run_duration_array"
+                android:paddingVertical="8dp"
                 android:textSize="14sp"
+                android:theme="@style/AppTheme.SelectableText"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <Button
                 android:id="@+id/startButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
                 android:text="@string/button_start" />
         </TableRow>
 
     </TableLayout>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="left"
+        android:text="@string/label_results"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
