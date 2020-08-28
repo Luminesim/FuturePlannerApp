@@ -7,5 +7,6 @@
     <color name="canvasColor">#ffffff</color>
     <color name="dimCanvasColor">#ddeeee</color>
     <color name="selectionColor">#b7e1f5</color>
+    <color name="colorChartFill">#b7e1f5</color>
 
 </resources>

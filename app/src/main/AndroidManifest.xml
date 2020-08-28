@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.luminesim.futureplanner">
 
+    <!-- Not yet ready for tablets, and definitely not for watches. -->
+
+    <supports-screens android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="false"
+        android:xlargeScreens="false"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

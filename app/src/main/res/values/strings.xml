@@ -14,7 +14,7 @@
     <string name="button_cancel">Cancel</string>
     <string name="title_activity_results">ResultsActivity</string>
     <string name="tab_text_1">Funds</string>
-    <string name="tab_text_2">Goals</string>
+    <string name="tab_text_2">Store</string>
     <string name="title_activity_category_contents_list">CategoryContentsList</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -67,23 +67,12 @@
     <string name="label_amount_name">Name:</string>
     <string name="label_results">Results:</string>
     <string name="toolbar_title_fact_entry">Edit Amount</string>
-
-    <string-array name="canada_tax_region_array">
-        <item>Alberta</item>
-        <item>British Columbia</item>
-        <item>Manitoba</item>
-        <item>New Brunswick</item>
-        <item>Newfoundland and Labrador</item>
-        <item>Nova Scotia</item>
-        <item>Ontario</item>
-        <item>Prince Edward Island</item>
-        <item>Quebec</item>
-        <item>Saskatchewan</item>
-        <item>Northwest Territories</item>
-        <item>Yukon</item>
-        <item>Nunavut</item>
-    </string-array>
-
+    <string name="button_purchase">Purchase</string>
+    <string name="title_store">Store</string>
+    <string name="error_infinity_or_nan_result_short_message"><![CDATA[FuturePlanner can\'t graph extremely large numbers.]]></string>
+    <string name="error_infinity_or_nan_result_long_message"><![CDATA[FuturePlanner encountered either an extremely large number (e.g. more than 30 digits) or was asked to divide by zero. Please check your income, expenses, initial funds, and other inputs.]]></string>
+    <string name="button_ok">OK</string>
+    <string name="title_error">Oops!</string>
     <string-array name="default_run_duration_array">
         <item>3 months</item>
         <item>6 months</item>

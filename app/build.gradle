@@ -95,4 +95,8 @@ dependencies {
     // Ads.
     implementation 'com.google.android.gms:play-services-ads:19.2.0'
 
+
+    def billing_version = "3.0.0"
+    implementation "com.android.billingclient:billing:$billing_version"
+
 }

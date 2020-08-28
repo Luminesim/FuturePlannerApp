@@ -25,7 +25,12 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary" />
+            android:background="?attr/colorPrimary"
+            app:tabIndicatorColor="@color/selectionColor"
+            app:tabIndicatorHeight="4dp"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/selectionColor"
+            app:tabTextColor="@color/lightTextOnAccent" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

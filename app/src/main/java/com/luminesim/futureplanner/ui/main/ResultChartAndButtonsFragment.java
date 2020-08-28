@@ -1,5 +1,6 @@
 package com.luminesim.futureplanner.ui.main;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -175,49 +177,51 @@ public class ResultChartAndButtonsFragment extends Fragment {
         mRunner.submit(() -> {
             try {
                 mSimulation.run();
-                LineData data = getData(mSimulation);
+                Optional<LineData> result = getData(mSimulation);
+
                 getActivity().runOnUiThread(() -> {
-                    // Set up the chart and its  data.
-                    mChart.setData(data);
 
-                    // Fix the legend and description.
-                    mChart.getDescription().setText("");
+                    if (!result.isPresent()) {
+                        mChart.setData(null);
+                        mChart.setNoDataText(getString(R.string.error_infinity_or_nan_result_short_message));
+                        new AlertDialog
+                                .Builder(getActivity())
+                                .setTitle(R.string.title_error)
+                                .setNeutralButton(R.string.button_ok, (x, y) -> {})
+                                .setMessage(R.string.error_infinity_or_nan_result_long_message)
+                                .show();
+                        mChart.invalidate();
+                    } else {
+                        LineData data = result.get();
+                        // Set up the chart and its  data.
+                        mChart.setData(data);
 
-                    // Update the Y scale to be a sensible size, defaulting to zero as the ymin
-                    // for a consistent scale. Also, remove the right axis as it adds no value.
-                    mChart.getAxisLeft().setAxisMaximum(Math.max(100, data.getYMax() * 1.05f));
-                    mChart.getAxisLeft().setAxisMinimum(Math.min(0, data.getYMin() - data.getYMin() * 0.05f));
-                    mChart.getAxisRight().setAxisMaximum(0);
-                    mChart.getAxisRight().setAxisMinimum(0);
+                        // Fix the legend and description.
+                        mChart.getDescription().setText("");
 
-                    // Update the X axis to use dates.
-                    mChart.getXAxis().setValueFormatter(
-                            new ValueFormatter() {
-                                @Override
-                                public String getAxisLabel(float value, AxisBase axis) {
-                                    return LocalDate.ofEpochDay((long) value).toString();
+                        // Update the Y scale to be a sensible size, defaulting to zero as the ymin
+                        // for a consistent scale. Also, remove the right axis as it adds no value.
+                        mChart.getAxisLeft().setAxisMaximum(Math.max(100, data.getYMax() * 1.05f));
+                        mChart.getAxisLeft().setAxisMinimum(Math.min(0, data.getYMin() - data.getYMin() * 0.05f));
+                        mChart.getAxisRight().setAxisMaximum(0);
+                        mChart.getAxisRight().setAxisMinimum(0);
+
+                        // Update the X axis to use dates.
+                        mChart.getXAxis().setValueFormatter(
+                                new ValueFormatter() {
+                                    @Override
+                                    public String getAxisLabel(float value, AxisBase axis) {
+                                        return LocalDate.ofEpochDay((long) value).toString();
+                                    }
                                 }
-                            }
-                    );
-//                    mChart.getXAxis().setLabelRotationAngle(-45);
-                    mChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-                    mChart.getXAxis().setLabelRotationAngle(-30);
+                        );
+                        mChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+                        mChart.getXAxis().setLabelRotationAngle(-30);
 
-                    // Redraw.
-                    mChart.invalidate();
-//                    mRunner.submit(() -> {
-//                        try {
-//                            Thread.sleep(1000);
-//
-//
-//                            // Redraw.
-//                            getActivity().runOnUiThread(() ->
-//                                    mChart.invalidate()
-//                            );
-//                        } catch (Throwable t) {
-//                            Log.e("Error", "Problem sleeping while invalidating.", t);
-//                        }
-//                    });
+                        // Redraw.
+                        mChart.invalidate();
+                        mChart.setNoDataText("Tap start button");
+                    }
                 });
             } catch (Throwable t) {
                 throw t;
@@ -228,21 +232,36 @@ public class ResultChartAndButtonsFragment extends Fragment {
                     mAmount.setEnabled(true);
                     mRuntime.setEnabled(true);
                     mStartButton.setEnabled(true);
-                    mChart.setNoDataText("Tap start button");
                 });
             }
         });
     }
 
-    private LineData getData(EntityWithFundsSimulation results) {
+    /**
+     * Gets the results of the simulation. If any amount hits infinity or results in NAN, an empty
+     * value is returned.
+     *
+     * @param results
+     * @return
+     */
+    private Optional<LineData> getData(EntityWithFundsSimulation results) {
+
+        // Sanity check: if funds reaches infinity or nan, it can't be displayed.
+        if (results.getFundsDataset().values().stream().anyMatch(value -> value.isInfinite() || value.isNaN() || Float.isInfinite(value.floatValue()) || Float.isNaN(value.floatValue()))) {
+            return Optional.empty();
+        }
+
         // Get the data for the dataset.
         List<Entry> entries = new ArrayList<>(results.getFundsDataset().size());
         results.getFundsDataset().forEach((date, funds) -> entries.add(new Entry((float) date.toEpochDay(), funds.floatValue())));
 
         // Make it pretty.
         LineDataSet set1 = new LineDataSet(entries, getString(R.string.chart_legend_funds));
+        set1.setDrawFilled(true);
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(ColorTemplate.getHoloBlue());
+        set1.setFillColor(ColorTemplate.getHoloBlue());
+        ;
         set1.setValueTextColor(ColorTemplate.getHoloBlue());
         set1.setLineWidth(3.0f);
         set1.setDrawCircles(false);
@@ -256,7 +275,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
         LineData data = new LineData(set1);
         data.setValueTextColor(Color.WHITE);
         data.setValueTextSize(9f);
-        return data;
+        return Optional.of(data);
     }
 
     @Override
