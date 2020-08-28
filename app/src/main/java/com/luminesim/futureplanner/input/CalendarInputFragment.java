@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.CalendarView;
 
 import com.luminesim.futureplanner.R;
@@ -15,6 +16,7 @@ import com.luminesim.futureplanner.R;
 import java.util.GregorianCalendar;
 
 /**
+ *
  */
 public class CalendarInputFragment extends AlertDialogFragment {
 
@@ -32,7 +34,9 @@ public class CalendarInputFragment extends AlertDialogFragment {
         });
         return new AlertDialog.Builder(getContext())
                 .setView(toStart)
-                .setPositiveButton(R.string.button_save, (d, which) -> positiveButtonCallback.accept(toStart))
+                .setPositiveButton(R.string.button_save, (d, which) -> {
+                    positiveButtonCallback.accept(toStart);
+                })
                 .setNegativeButton(R.string.button_cancel, (d, w) -> {
                 })
                 .create();

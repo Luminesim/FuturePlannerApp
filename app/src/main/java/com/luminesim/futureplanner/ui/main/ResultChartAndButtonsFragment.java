@@ -3,13 +3,10 @@ package com.luminesim.futureplanner.ui.main;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -20,7 +17,6 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -30,10 +26,8 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.luminesim.futureplanner.FactListActivity;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.Category;
-import com.luminesim.futureplanner.db.EntityParameter;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.simulation.EntityWithFundsSimulation;
 import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
@@ -292,27 +286,6 @@ public class ResultChartAndButtonsFragment extends Fragment {
 
 
             container.findViewById(R.id.startButton).setOnClickListener(this::onStartButtonPressed);
-
-//            ((EditText)container.findViewById(R.id.initialFundsEditText)).addTextChangedListener(new TextWatcher() {
-//                @Override
-//                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//                }
-//
-//                @Override
-//                public void onTextChanged(CharSequence s, int start, int before, int count) {
-//
-//                    // Invalidate the chart.
-//                    mChart.setData(null);
-//                    mChart.setNoDataText("Tap start to re-run");
-//                }
-//
-//                @Override
-//                public void afterTextChanged(Editable s) {
-//
-//                }
-//            });
-
 
             // Load ads.
             AdView mAdView = container.findViewById(R.id.adView);

@@ -13,7 +13,7 @@
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
     <string name="title_activity_results">ResultsActivity</string>
-    <string name="tab_text_1">Finances</string>
+    <string name="tab_text_1">Funds</string>
     <string name="tab_text_2">Goals</string>
     <string name="title_activity_category_contents_list">CategoryContentsList</string>
     <!-- Strings used for fragments for navigation -->
@@ -66,6 +66,7 @@
     <string name="label_remaining_options">Remaining Options:</string>
     <string name="label_amount_name">Name:</string>
     <string name="label_results">Results:</string>
+    <string name="toolbar_title_fact_entry">Edit Amount</string>
 
     <string-array name="canada_tax_region_array">
         <item>Alberta</item>

@@ -100,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="left"
                 android:text="@string/label_initial_funds"
-                android:textSize="18sp" />
+                android:textSize="14sp" />
 
             <EditText
                 android:id="@+id/initialFundsEditText"
@@ -126,7 +126,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="left"
                 android:text="@string/label_run_duration"
-                android:textSize="18sp" />
+                android:textSize="14sp" />
 
             <Spinner
                 android:id="@+id/runDurationSpinner"
@@ -160,7 +160,8 @@
         android:layout_marginEnd="16dp"
         android:gravity="left"
         android:text="@string/label_results"
-        android:textSize="18sp"
+        android:textSize="14sp"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout" />

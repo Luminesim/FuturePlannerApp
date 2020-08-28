@@ -241,13 +241,13 @@ public abstract class EntityWithFundsSimulation implements Runnable {
             boolean isAtOrBeforeEnd = true;
             if (rate instanceof ScheduledRate) {
                 ScheduledRate scheduledRate = (ScheduledRate) rate;
+                LocalDate simulationTime = startTime.plusDays((long) engine.time()).toLocalDate();
                 if (scheduledRate.getStart().isPresent()) {
                     // REQUIRES EVEN DT
-                    LocalDate simulationTime = startTime.plusDays((long) engine.time()).toLocalDate();
                     isAtOrAfterStart = !simulationTime.isBefore(scheduledRate.getStart().get());
-                    if (scheduledRate.getEnd().isPresent()) {
-                        isAtOrBeforeEnd = !simulationTime.isAfter(scheduledRate.getEnd().get());
-                    }
+                }
+                if (scheduledRate.getEnd().isPresent()) {
+                    isAtOrBeforeEnd = !simulationTime.isAfter(scheduledRate.getEnd().get());
                 }
             }
             if (isAtOrAfterStart && isAtOrBeforeEnd) {

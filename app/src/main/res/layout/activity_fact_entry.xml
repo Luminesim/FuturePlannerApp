@@ -4,7 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FactEntryActivity">
+    tools:context=".ui.main.FactEntryActivity">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/predictive_option_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="@dimen/constraint_spacing_smallest"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:focusableInTouchMode="false"
+        android:focusedByDefault="false"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textFactLabel2">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        app:title="@string/toolbar_title_fact_entry"
+        app:titleTextColor="@color/lightTextOnAccent" />
 
     <TextView
         android:id="@+id/textFactLabel3"
@@ -14,11 +43,13 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:ems="10"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:inputType="textPersonName"
         android:text="@string/label_amount_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <EditText
         android:id="@+id/textFactName"
@@ -66,7 +97,7 @@
             android:layout_height="16dp" />
 
         <com.google.android.gms.ads.AdView
-            android:id="@+id/adView2"
+            android:id="@+id/adView"
             android:layout_width="match_parent"
             android:layout_height="48sp"
             app:adSize="SMART_BANNER"
@@ -138,7 +169,7 @@
     <TextView
         android:id="@+id/textFactLabel2"
         android:layout_width="0dp"
-        android:layout_height="19dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
@@ -149,18 +180,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/commandEditText" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/predictive_option_list"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="@dimen/constraint_spacing_smallest"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textFactLabel2">
-
-    </androidx.recyclerview.widget.RecyclerView>
 </androidx.constraintlayout.widget.ConstraintLayout>

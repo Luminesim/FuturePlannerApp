@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FactListActivity">
+    tools:context=".ui.main.FactListActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -42,7 +42,7 @@
                     layout="@layout/content_category_contents_list"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    app:layout_constraintBottom_toTopOf="@+id/adView2"
+                    app:layout_constraintBottom_toTopOf="@+id/adView"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
@@ -50,7 +50,7 @@
                     app:layout_constraintVertical_bias="1.0" />
 
                 <com.google.android.gms.ads.AdView
-                    android:id="@+id/adView2"
+                    android:id="@+id/adView"
                     android:layout_width="match_parent"
                     android:layout_height="48sp"
                     android:layout_gravity="bottom|end"

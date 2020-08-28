@@ -1,4 +1,4 @@
-package com.luminesim.futureplanner;
+package com.luminesim.futureplanner.ui.main;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +13,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.luminesim.futureplanner.Category;
+import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityFactWithDetails;
@@ -105,6 +109,13 @@ public class FactEntryActivity extends AppCompatActivity {
 
         // Set whether or not save should be enabled.
         setSaveButtonState();
+
+        // Load ads.
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+
+//        mAdView.setVisibility(View.GONE);
     }
 
     /**

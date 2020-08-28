@@ -1,4 +1,4 @@
-package com.luminesim.futureplanner;
+package com.luminesim.futureplanner.ui.main;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -20,6 +20,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.tabs.TabLayout;
+import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityParameter;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.simulation.EntityWithFundsSimulation;

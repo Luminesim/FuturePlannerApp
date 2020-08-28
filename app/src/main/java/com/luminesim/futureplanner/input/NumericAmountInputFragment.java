@@ -3,6 +3,7 @@ package com.luminesim.futureplanner.input;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,8 +21,11 @@ public class NumericAmountInputFragment extends AlertDialogFragment {
         toStart = getActivity().getLayoutInflater().inflate(R.layout.fragment_numeric_amount_input, null);
         return new AlertDialog.Builder(getContext())
                 .setView(toStart)
-                .setPositiveButton(R.string.button_save, (d, which) -> positiveButtonCallback.accept(toStart))
-                .setNegativeButton(R.string.button_cancel, (d, w) -> {})
+                .setPositiveButton(R.string.button_save, (d, which) -> {
+                    positiveButtonCallback.accept(toStart);
+                })
+                .setNegativeButton(R.string.button_cancel, (d, w) -> {
+                })
                 .create();
     }
 }
