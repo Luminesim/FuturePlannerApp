@@ -128,7 +128,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
                     });
 
             // Determine the runtime.
-            int MONTH = 30;
+            int MONTH = 31;
             int YEAR = 365;
             switch (mRuntime.getSelectedItemPosition()) {
                 case 0:
