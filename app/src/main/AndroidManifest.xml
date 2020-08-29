@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.luminesim.futureplanner">
+    package="com.luminesim.futureplanner" >
 
     <!-- Not yet ready for tablets, and definitely not for watches. -->
 

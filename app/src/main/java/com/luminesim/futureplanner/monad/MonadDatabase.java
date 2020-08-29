@@ -20,14 +20,18 @@ import org.json.JSONArray;
 
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -305,7 +309,12 @@ public final class MonadDatabase {
                             "IdStarting",
                             new StartingMonad("Date"),
                             Arrays.asList(Category.values()),
-                            "starting %s",
+                            params -> {
+                                LocalDate date = (LocalDate)params[0];
+                                DateTimeFormatter df = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+                                String formattedDate = date.format(df);
+                                return String.format("starting %s", formattedDate);
+                            },
                             context.getString(R.string.monad_starting_view_text),
                             Optional.of(() -> new CalendarInputFragment()),
                             (template, view) -> {
@@ -317,7 +326,12 @@ public final class MonadDatabase {
                             "IdEnding",
                             new EndingMonad("Date"),
                             Arrays.asList(Category.values()),
-                            "ending %s",
+                            params -> {
+                                LocalDate date = (LocalDate)params[0];
+                                DateTimeFormatter df = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+                                String formattedDate = date.format(df);
+                                return String.format("ending %s", formattedDate);
+                            },
                             context.getString(R.string.monad_ending_view_text),
                             Optional.of(() -> new CalendarInputFragment()),
                             (template, view) -> {
@@ -332,7 +346,9 @@ public final class MonadDatabase {
                             params -> {
                                 LocalDateTime raw = (LocalDateTime)params[0];
                                 LocalDate date = raw.toLocalDate();
-                                return String.format("once on %s", date);
+                                DateTimeFormatter df = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+                                String formattedDate = date.format(df);
+                                return String.format("once on %s", formattedDate);
                             },
                             context.getString(R.string.monad_one_off_view_text),
                             Optional.of(() -> new CalendarInputFragment()),
