@@ -177,52 +177,58 @@ public class ResultChartAndButtonsFragment extends Fragment {
         mRunner.submit(() -> {
             try {
                 mSimulation.run();
-                Optional<LineData> result = getData(mSimulation);
 
-                getActivity().runOnUiThread(() -> {
+                // NOTE: For some reason the rendering engine struggles with rotated / large
+                // axis labels, so we need to draw TWICE for things to display correctly.
+                for (int i = 0; i < 2; i += 1) {
+                    Optional<LineData> result = getData(mSimulation);
 
-                    if (!result.isPresent()) {
-                        mChart.setData(null);
-                        mChart.setNoDataText(getString(R.string.error_infinity_or_nan_result_short_message));
-                        new AlertDialog
-                                .Builder(getActivity())
-                                .setTitle(R.string.title_error)
-                                .setNeutralButton(R.string.button_ok, (x, y) -> {})
-                                .setMessage(R.string.error_infinity_or_nan_result_long_message)
-                                .show();
-                        mChart.invalidate();
-                    } else {
-                        LineData data = result.get();
-                        // Set up the chart and its  data.
-                        mChart.setData(data);
+                    getActivity().runOnUiThread(() -> {
 
-                        // Fix the legend and description.
-                        mChart.getDescription().setText("");
+                        if (!result.isPresent()) {
+                            mChart.setData(null);
+                            mChart.setNoDataText(getString(R.string.error_infinity_or_nan_result_short_message));
+                            new AlertDialog
+                                    .Builder(getActivity())
+                                    .setTitle(R.string.title_error)
+                                    .setNeutralButton(R.string.button_ok, (x, y) -> {
+                                    })
+                                    .setMessage(R.string.error_infinity_or_nan_result_long_message)
+                                    .show();
+                            mChart.invalidate();
+                        } else {
+                            LineData data = result.get();
+                            // Set up the chart and its  data.
+                            mChart.setData(data);
 
-                        // Update the Y scale to be a sensible size, defaulting to zero as the ymin
-                        // for a consistent scale. Also, remove the right axis as it adds no value.
-                        mChart.getAxisLeft().setAxisMaximum(Math.max(100, data.getYMax() * 1.05f));
-                        mChart.getAxisLeft().setAxisMinimum(Math.min(0, data.getYMin() - data.getYMin() * 0.05f));
-                        mChart.getAxisRight().setAxisMaximum(0);
-                        mChart.getAxisRight().setAxisMinimum(0);
+                            // Fix the legend and description.
+                            mChart.getDescription().setText("");
 
-                        // Update the X axis to use dates.
-                        mChart.getXAxis().setValueFormatter(
-                                new ValueFormatter() {
-                                    @Override
-                                    public String getAxisLabel(float value, AxisBase axis) {
-                                        return LocalDate.ofEpochDay((long) value).toString();
+                            // Update the Y scale to be a sensible size, defaulting to zero as the ymin
+                            // for a consistent scale. Also, remove the right axis as it adds no value.
+                            mChart.getAxisLeft().setAxisMaximum(Math.max(100, data.getYMax() * 1.05f));
+                            mChart.getAxisLeft().setAxisMinimum(Math.min(0, data.getYMin() - data.getYMin() * 0.05f));
+                            mChart.getAxisRight().setAxisMaximum(0);
+                            mChart.getAxisRight().setAxisMinimum(0);
+
+                            // Update the X axis to use dates.
+                            mChart.getXAxis().setValueFormatter(
+                                    new ValueFormatter() {
+                                        @Override
+                                        public String getAxisLabel(float value, AxisBase axis) {
+                                            return LocalDate.ofEpochDay((long) value).toString();
+                                        }
                                     }
-                                }
-                        );
-                        mChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-                        mChart.getXAxis().setLabelRotationAngle(-30);
+                            );
+                            mChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+                            mChart.getXAxis().setLabelRotationAngle(-30);
 
-                        // Redraw.
-                        mChart.invalidate();
-                        mChart.setNoDataText("Tap start button");
-                    }
-                });
+                            // Redraw.
+                            mChart.postInvalidate();
+                            mChart.setNoDataText("Tap start button");
+                        }
+                    });
+                }
             } catch (Throwable t) {
                 throw t;
             } finally {
