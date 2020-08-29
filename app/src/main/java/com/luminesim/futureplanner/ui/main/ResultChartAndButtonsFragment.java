@@ -310,6 +310,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
             AdView mAdView = container.findViewById(R.id.adView);
             AdRequest adRequest = new AdRequest.Builder().build();
             mAdView.loadAd(adRequest);
+//            mAdView.setVisibility(View.GONE);
         });
         return root;
     }

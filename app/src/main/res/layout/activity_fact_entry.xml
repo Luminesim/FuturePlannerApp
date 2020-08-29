@@ -94,12 +94,12 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="16dp" />
+            android:layout_height="8dp" />
 
         <com.google.android.gms.ads.AdView
             android:id="@+id/adView"
             android:layout_width="match_parent"
-            android:layout_height="48sp"
+            android:layout_height="50dp"
             app:adSize="SMART_BANNER"
             app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
     </LinearLayout>

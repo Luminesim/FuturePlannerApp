@@ -52,7 +52,7 @@
                 <com.google.android.gms.ads.AdView
                     android:id="@+id/adView"
                     android:layout_width="match_parent"
-                    android:layout_height="48sp"
+                    android:layout_height="50dp"
                     android:layout_gravity="bottom|end"
                     app:adSize="SMART_BANNER"
                     app:adUnitId="ca-app-pub-3940256099942544/6300978111"

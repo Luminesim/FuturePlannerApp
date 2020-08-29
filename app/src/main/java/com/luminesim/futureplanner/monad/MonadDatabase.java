@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -63,7 +65,7 @@ public final class MonadDatabase {
     /**
      * All string formatters for the monad's data.
      */
-    private final Map<String, String> mFormatters = new HashMap<>();
+    private final Map<String, Function<Object[], String>> mFormatters = new HashMap<>();
 
     /**
      * IDs of the views shown for each monad in predictive contexts (e.g. $[amount])
@@ -93,6 +95,28 @@ public final class MonadDatabase {
      */
     private final Map<String, List<Category>> mCategories = new HashMap<>();
 
+
+
+    /**
+     * @param key
+     * @param monad
+     * @param formatString
+     * @param predictiveView
+     * @param inputView
+     * @param inputProcessor
+     * @return
+     * @pre key is unique
+     */
+    public MonadDatabase add(
+            @NonNull String key,
+            @NonNull Monad monad,
+            @NonNull List<Category> validCategories,
+            @NonNull String formatString,
+            @NonNull String predictiveView,
+            @NonNull Optional<Supplier<AlertDialogFragment>> inputView,
+            @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
+        return add(key, monad, validCategories, params -> String.format(formatString, params), predictiveView, inputView, inputProcessor);
+    }
     /**
      * @param key
      * @param monad
@@ -107,7 +131,7 @@ public final class MonadDatabase {
             @NonNull String key,
             @NonNull Monad monad,
             @NonNull List<Category> validCategories,
-            @NonNull String formatter,
+            @NonNull Function<Object[], String> formatter,
             @NonNull String predictiveView,
             @NonNull Optional<Supplier<AlertDialogFragment>> inputView,
             @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
@@ -173,7 +197,7 @@ public final class MonadDatabase {
      * @return
      */
     public String format(@NonNull String monadId, @NonNull Object[] parameterValues) {
-        return String.format(mFormatters.get(monadId), parameterValues);
+        return mFormatters.get(monadId).apply(parameterValues);
     }
 
     /**
@@ -305,7 +329,11 @@ public final class MonadDatabase {
                             "IdOnDate",
                             new OnDateMonad("Date"),
                             Arrays.asList(Category.values()),
-                            "once on %s",
+                            params -> {
+                                LocalDateTime raw = (LocalDateTime)params[0];
+                                LocalDate date = raw.toLocalDate();
+                                return String.format("once on %s", date);
+                            },
                             context.getString(R.string.monad_one_off_view_text),
                             Optional.of(() -> new CalendarInputFragment()),
                             (template, view) -> {
