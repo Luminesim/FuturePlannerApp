@@ -73,7 +73,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 app:adSize="SMART_BANNER"
-                app:adUnitId="ca-app-pub-3940256099942544/6300978111" />
+                app:adUnitId="ca-app-pub-1047719919485882/5841012369" />
 
         </LinearLayout>
 
@@ -96,9 +96,10 @@
 
             <TextView
                 android:id="@+id/textView2"
-                android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 android:gravity="left"
+                android:minWidth="80dp"
+                android:paddingRight="16dp"
                 android:text="@string/label_initial_funds"
                 android:textSize="14sp" />
 
@@ -122,9 +123,10 @@
 
             <TextView
                 android:id="@+id/textView3"
-                android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 android:gravity="left"
+                android:minWidth="80dp"
+                android:paddingRight="16dp"
                 android:text="@string/label_run_duration"
                 android:textSize="14sp" />
 
@@ -136,6 +138,7 @@
                 android:background="@color/canvasColor"
                 android:elevation="@dimen/selectable_elevation"
                 android:entries="@array/default_run_duration_array"
+                android:minWidth="100dp"
                 android:paddingVertical="8dp"
                 android:textSize="14sp"
                 android:theme="@style/AppTheme.SelectableText"

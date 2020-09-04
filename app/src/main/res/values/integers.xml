@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="min_lines_long_edit_text">3</integer>
-    <integer name="min_lines_store_description">3</integer>
+    <integer name="min_lines_store_description">2</integer>
 </resources>

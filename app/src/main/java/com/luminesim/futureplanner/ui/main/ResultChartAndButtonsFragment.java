@@ -13,9 +13,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.android.billingclient.api.BillingResult;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
@@ -30,6 +32,9 @@ import com.google.android.gms.ads.AdView;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.db.EntityRepository;
+import com.luminesim.futureplanner.purchases.CanNavigateToStore;
+import com.luminesim.futureplanner.purchases.FeatureManager;
+import com.luminesim.futureplanner.purchases.FeatureSet;
 import com.luminesim.futureplanner.simulation.EntityWithFundsSimulation;
 import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
 
@@ -48,6 +53,8 @@ public class ResultChartAndButtonsFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private PageViewModel pageViewModel;
+    private AdView mAdView;
+    public static final int PAGE_INDEX = 1;
 
     /**
      * Boolean extra.
@@ -64,12 +71,10 @@ public class ResultChartAndButtonsFragment extends Fragment {
     private LineChart mChart;
 
     private int mRuntimeInDays;
+    private FeatureManager mFeatures;
 
-    public static ResultChartAndButtonsFragment newInstance(int index) {
+    public static ResultChartAndButtonsFragment newInstance() {
         ResultChartAndButtonsFragment fragment = new ResultChartAndButtonsFragment();
-        Bundle bundle = new Bundle();
-        bundle.putInt(ARG_SECTION_NUMBER, index);
-        fragment.setArguments(bundle);
         return fragment;
     }
 
@@ -77,11 +82,9 @@ public class ResultChartAndButtonsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         pageViewModel = ViewModelProviders.of(this).get(PageViewModel.class);
-        int index = 1;
-        if (getArguments() != null) {
-            index = getArguments().getInt(ARG_SECTION_NUMBER);
-        }
-        pageViewModel.setIndex(index);
+        pageViewModel.setIndex(PAGE_INDEX);
+
+
     }
 
     @Override
@@ -111,8 +114,10 @@ public class ResultChartAndButtonsFragment extends Fragment {
 
     public void onStartButtonPressed(View view) {
 
-        long entityUid = getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l);
+        // Ensure we have the latest features.
+        mLatestFeatures = mFeatures.getPurchasedFeatures(true);
 
+        long entityUid = getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l);
 
         mRepo.getEntity(entityUid, entityWithFacts -> {
 
@@ -141,9 +146,33 @@ public class ResultChartAndButtonsFragment extends Fragment {
                     mRuntimeInDays = 1 * YEAR;
                     break;
                 case 3:
+                    if (!mLatestFeatures.isTwoYearRuntimeEnabled()) {
+                        getActivity().runOnUiThread(() -> new AlertDialog
+                                .Builder(getActivity())
+                                .setTitle(R.string.title_error)
+                                .setMessage(R.string.runtime_feature_not_purchased)
+                                .setNegativeButton(R.string.maybe_later, (dialog, which) -> {
+                                })
+                                .setPositiveButton(R.string.go_to_store, (dialog, which) -> ((CanNavigateToStore) getActivity()).navigateToStore(FeatureSet.builder().isTwoYearRuntimeEnabled(true).build()))
+                                .create()
+                                .show());
+                        return;
+                    }
                     mRuntimeInDays = 2 * YEAR;
                     break;
                 case 4:
+                    if (!mLatestFeatures.isFiveYearRuntimeEnabled()) {
+                        getActivity().runOnUiThread(() -> new AlertDialog
+                                .Builder(getActivity())
+                                .setTitle(R.string.title_error)
+                                .setMessage(R.string.runtime_feature_not_purchased)
+                                .setNegativeButton(R.string.maybe_later, (dialog, which) -> {
+                                })
+                                .setPositiveButton(R.string.go_to_store, (dialog, which) -> ((CanNavigateToStore) getActivity()).navigateToStore(FeatureSet.builder().isFiveYearRuntimeEnabled(true).build()))
+                                .create()
+                                .show());
+                        return;
+                    }
                     mRuntimeInDays = 5 * YEAR;
                     break;
                 default:
@@ -284,6 +313,42 @@ public class ResultChartAndButtonsFragment extends Fragment {
         return Optional.of(data);
     }
 
+    private FeatureSet mLatestFeatures = FeatureSet.noFeatures();
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mFeatures = new FeatureManager(getContext());
+        mFeatures.listen(new FeatureManager.FeatureManagerListener() {
+            @Override
+            public void onProductListReady() {
+            }
+
+            @Override
+            public void onFeaturesUpdated() {
+                mLatestFeatures = mFeatures.getPurchasedFeatures(false);
+                if (mLatestFeatures.isAdvertisingEnabled()) {
+                    mAdView.setVisibility(View.VISIBLE);
+                } else {
+                    mAdView.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onErrorLoadingFeatures() {
+                if (mAdView == null)
+                    return;
+                mLatestFeatures = mFeatures.getPurchasedFeatures(false);
+                if (mLatestFeatures.isAdvertisingEnabled()) {
+                    mAdView.setVisibility(View.VISIBLE);
+                } else {
+                    mAdView.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -313,10 +378,10 @@ public class ResultChartAndButtonsFragment extends Fragment {
             container.findViewById(R.id.startButton).setOnClickListener(this::onStartButtonPressed);
 
             // Load ads.
-            AdView mAdView = container.findViewById(R.id.adView);
+            mAdView = container.findViewById(R.id.adView);
             AdRequest adRequest = new AdRequest.Builder().build();
             mAdView.loadAd(adRequest);
-//            mAdView.setVisibility(View.GONE);
+            mAdView.setVisibility(View.GONE);
         });
         return root;
     }

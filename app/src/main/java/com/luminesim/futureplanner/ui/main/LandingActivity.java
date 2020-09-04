@@ -2,8 +2,12 @@ package com.luminesim.futureplanner.ui.main;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 
 import com.google.android.gms.ads.MobileAds;
@@ -12,6 +16,7 @@ import com.luminesim.futureplanner.db.Entity;
 import com.luminesim.futureplanner.db.EntityParameter;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.db.EntityWithParameters;
+import com.luminesim.futureplanner.purchases.FeatureManager;
 import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
 
 import java.util.Arrays;
@@ -26,6 +31,20 @@ public class LandingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing);
+
+        // Launch the feature manager
+//        Intent intent = new Intent(this, FeatureManager.class);
+//        bindService(intent, new ServiceConnection() {
+//            @Override
+//            public void onServiceConnected(ComponentName name, IBinder service) {
+//                name.
+//            }
+//
+//            @Override
+//            public void onServiceDisconnected(ComponentName name) {
+//
+//            }
+//        }, Service.BIND_AUTO_CREATE);
 
         // Set up monetization.
         MobileAds.initialize(this, status -> {});

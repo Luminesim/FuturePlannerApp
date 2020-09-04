@@ -30,9 +30,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         // getItem is called to instantiate the fragment for the given page.
         switch (position) {
             case 0:
-                return ResultChartAndButtonsFragment.newInstance(position + 1);
+                return ResultChartAndButtonsFragment.newInstance();
             case 1:
-                return StoreFragment.newInstance(position + 1);
+                return StoreFragment.newInstance();
             default:
                 throw new Error("Unhandled tab position: " + position);
         }

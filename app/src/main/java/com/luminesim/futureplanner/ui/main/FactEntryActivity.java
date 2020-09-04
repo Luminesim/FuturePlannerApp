@@ -24,6 +24,8 @@ import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadData;
 import com.luminesim.futureplanner.monad.MonadSelectionView;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
+import com.luminesim.futureplanner.purchases.FeatureManager;
+import com.luminesim.futureplanner.purchases.FeatureSet;
 import com.luminesim.futureplanner.ui.main.ResultChartAndButtonsFragment;
 
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class FactEntryActivity extends AppCompatActivity {
     private long mEntityUid;
     private long mFactUid;
     private Category mCategory;
+    private FeatureManager mFeatures;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +117,36 @@ public class FactEntryActivity extends AppCompatActivity {
         AdView mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
-//        mAdView.setVisibility(View.GONE);
+        mAdView.setVisibility(View.GONE);
+
+        mFeatures = new FeatureManager(this);
+        mFeatures.listen(new FeatureManager.FeatureManagerListener() {
+            @Override
+            public void onProductListReady() {
+            }
+
+            @Override
+            public void onFeaturesUpdated() {
+                FeatureSet features = mFeatures.getPurchasedFeatures(false);
+                if (features.isAdvertisingEnabled()) {
+                    mAdView.setVisibility(View.VISIBLE);
+                } else {
+                    mAdView.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onErrorLoadingFeatures() {
+                if (mAdView == null)
+                    return;
+                FeatureSet features = mFeatures.getPurchasedFeatures(false);
+                if (features.isAdvertisingEnabled()) {
+                    mAdView.setVisibility(View.VISIBLE);
+                } else {
+                    mAdView.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
     /**

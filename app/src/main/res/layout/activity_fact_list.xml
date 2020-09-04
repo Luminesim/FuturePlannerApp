@@ -55,7 +55,7 @@
                     android:layout_height="50dp"
                     android:layout_gravity="bottom|end"
                     app:adSize="SMART_BANNER"
-                    app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+                    app:adUnitId="ca-app-pub-1047719919485882/3421743873"
                     app:layout_constraintBottom_toBottomOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 

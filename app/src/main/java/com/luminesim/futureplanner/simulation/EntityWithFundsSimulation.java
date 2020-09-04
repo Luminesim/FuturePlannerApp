@@ -174,7 +174,6 @@ public abstract class EntityWithFundsSimulation implements Runnable {
             engine.start();
             for (double i = 0; i < endTime; i += dt) {
                 engine.runUntil(i);
-                Log.i("Simulation", "Running until " + i + "/" + endTime + ", funds are " + getFunds());
                 fundsDataset.put(startTime.plusDays((long) i).toLocalDate(), getFunds());
             }
 

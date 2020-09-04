@@ -11,10 +11,13 @@ import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.input.AlertDialogFragment;
 import com.luminesim.futureplanner.input.CalendarInputFragment;
 import com.luminesim.futureplanner.input.NumericAmountInputFragment;
+import com.luminesim.futureplanner.input.PercentInputFragment;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 import com.luminesim.futureplanner.monad.types.OnDateMonad;
+import com.luminesim.futureplanner.monad.types.PercentAdditionMonad;
+import com.luminesim.futureplanner.monad.types.PercentDeductionMonad;
 
 import org.json.JSONArray;
 
@@ -294,16 +297,41 @@ public final class MonadDatabase {
                             "IdMoneyAmount",
                             new CurrencyMonad(Currency.getInstance("CAD")),
                             Arrays.asList(Category.values()),
-                            "$ %s",
+                            "$%s",
                             context.getString(R.string.monad_money_view_text),
                             Optional.of(() -> new NumericAmountInputFragment()),
                             //Optional.of(R.layout.fragment_numeric_amount_input),
                             (template, inputs) ->
                                     template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()))
                     );
+                    INSTANCE.add(
+                            "IdPercentDeduction",
+                            new PercentDeductionMonad("Percent"),
+                            Arrays.asList(Category.values()),
+                            "minus %s%%",
+                            context.getString(R.string.moand_percent_deduction),
+                            Optional.of(() -> new PercentInputFragment()),
+                            (template, inputs) -> {
+                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
+                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
+                            }
+                    );
+                    INSTANCE.add(
+                            "IdPercentAddition",
+                            new PercentAdditionMonad("Percent"),
+                            Arrays.asList(Category.values()),
+                            "plus %s%%",
+                            context.getString(R.string.moand_percent_addition),
+                            Optional.of(() -> new PercentInputFragment()),
+                            (template, inputs) -> {
+                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
+                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
+                            }
+                    );
                     INSTANCE.add("IdPerYear", new ToRateMonad(1 / 365.0), Arrays.asList(Category.values()), context.getString(R.string.monad_per_year_view_text), context.getString(R.string.monad_per_year_view_text));
                     INSTANCE.add("IdPerMonth", new ToRateMonad(1 / (365.0 / 12.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_month_view_text), context.getString(R.string.monad_per_month_view_text));
                     INSTANCE.add("IdPerWeek", new ToRateMonad(1 / (365.0 / 52.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_week_view_text), context.getString(R.string.monad_per_week_view_text));
+                    INSTANCE.add("IdPerFortnight", new ToRateMonad(1 / (365.0 / 26.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_fortnight_view_text), context.getString(R.string.monad_per_fortnight_view_text));
                     INSTANCE.add("IdPerDay", new ToRateMonad(1.0), Arrays.asList(Category.values()), context.getString(R.string.monad_per_day_view_text), context.getString(R.string.monad_per_day_view_text));
                     INSTANCE.add(
                             "IdStarting",

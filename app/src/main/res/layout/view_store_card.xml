@@ -38,21 +38,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="TextView" />
-
-                    <TextView
-                        android:id="@+id/labelStoreItemPrice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="TextView" />
+                        android:text="TextView"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="18sp" />
 
                     <Button
                         android:id="@+id/buttonPurchase"
-                        android:layout_width="wrap_content"
+                        android:layout_width="128dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="@dimen/padding_store_card"
+                        android:layout_weight="0"
+                        android:paddingHorizontal="16dp"
                         android:text="@string/button_purchase" />
 
                 </LinearLayout>
@@ -62,7 +57,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minLines="@integer/min_lines_store_description"
-                    android:paddingHorizontal="@dimen/padding_store_card"
+                    android:padding="@dimen/padding_store_card"
                     android:text="TextView" />
             </LinearLayout>
 

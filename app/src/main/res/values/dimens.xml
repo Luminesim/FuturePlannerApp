@@ -11,5 +11,5 @@
     <dimen name="padding_edit_text">2dp</dimen>
     <dimen name="constraint_spacing_smallest">2dp</dimen>
     <dimen name="padding_edit_text_one_line">4dp</dimen>
-    <dimen name="padding_store_card">4dp</dimen>
+    <dimen name="padding_store_card">8dp</dimen>
 </resources>

@@ -10,6 +10,8 @@ import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.luminesim.futureplanner.purchases.FeatureManager;
+import com.luminesim.futureplanner.purchases.FeatureSet;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +32,7 @@ public class FactListActivity extends AppCompatActivity {
     private int mCategoryTextId;
     private MonadDatabase mData;
     private LinearLayout mList;
+    private FeatureManager mFeatures;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +61,39 @@ public class FactListActivity extends AppCompatActivity {
         AdView mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
-//        mAdView.setVisibility(View.GONE);
+        mAdView.setVisibility(View.GONE);
+
+        mFeatures = new FeatureManager(this);
+        mFeatures.listen(new FeatureManager.FeatureManagerListener() {
+            @Override
+            public void onProductListReady() {
+            }
+
+            @Override
+            public void onFeaturesUpdated() {
+                FeatureSet features = mFeatures.getPurchasedFeatures(false);
+                if (features.isAdvertisingEnabled()) {
+                    mAdView.setVisibility(View.VISIBLE);
+                } else {
+                    mAdView.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onErrorLoadingFeatures() {
+                if (mAdView == null)
+                    return;
+                FeatureSet features = mFeatures.getPurchasedFeatures(false);
+                if (features.isAdvertisingEnabled()) {
+                    mAdView.setVisibility(View.VISIBLE);
+                } else {
+                    mAdView.setVisibility(View.GONE);
+                }
+            }
+        });
     }
+
+
 
     private void updateList() {
         mList.removeAllViews();

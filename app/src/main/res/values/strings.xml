@@ -3,7 +3,7 @@
     <string name="edit_message">Enter a message</string>
     <string name="button_clear_monad_selection">Clear</string>
     <string name="monad_money_amount">Amount</string>
-    <string name="monad_money_view_text"><![CDATA[$ <amount>]]></string>
+    <string name="monad_money_view_text"><![CDATA[$<amount>]]></string>
     <string name="monad_per_year_view_text">per year</string>
     <string name="monad_per_month_view_text">per month</string>
     <string name="monad_per_day_view_text">per day</string>
@@ -73,6 +73,16 @@
     <string name="error_infinity_or_nan_result_long_message"><![CDATA[FuturePlanner encountered either an extremely large number (e.g. more than 30 digits) or was asked to divide by zero. Please check your income, expenses, initial funds, and other inputs.]]></string>
     <string name="button_ok">OK</string>
     <string name="title_error">Oops!</string>
+    <string name="monad_per_fortnight_view_text">per fortnight (biweekly)</string>
+    <string name="runtime_feature_not_purchased">You need to increase FuturePlanner\'s forecast length to do that by unlocking it in the store. Do you want to go there now? </string>
+    <string name="maybe_later">Maybe Later</string>
+    <string name="go_to_store">Go To Store</string>
+    <string name="description_cant_load_store_items">No items to show. Are you logged into Google Play and connected to the internet?</string>
+    <string name="button_owned">Owned</string>
+    <string name="label_percent">Percent</string>
+    <string name="error_percent_out_of_0_100_range">Percent must be between 0 and 100.</string>
+    <string name="moand_percent_deduction"><![CDATA[minus <percent>]]></string>
+    <string name="moand_percent_addition"><![CDATA[plus <percent>]]></string>
     <string-array name="default_run_duration_array">
         <item>3 months</item>
         <item>6 months</item>

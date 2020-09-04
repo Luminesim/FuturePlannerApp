@@ -19,10 +19,13 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.common.Feature;
 import com.google.android.material.tabs.TabLayout;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityParameter;
 import com.luminesim.futureplanner.db.EntityRepository;
+import com.luminesim.futureplanner.purchases.CanNavigateToStore;
+import com.luminesim.futureplanner.purchases.FeatureSet;
 import com.luminesim.futureplanner.simulation.EntityWithFundsSimulation;
 import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
 import com.luminesim.futureplanner.ui.main.SectionsPagerAdapter;
@@ -31,20 +34,28 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ResultsActivity extends AppCompatActivity {
+public class ResultsActivity extends AppCompatActivity implements CanNavigateToStore {
+
+    private ViewPager mViewPager;
+
+    @Override
+    public void navigateToStore(FeatureSet featureFilter) {
+        mViewPager.setCurrentItem(StoreFragment.PAGE_INDEX);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_ui);
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
-        ViewPager viewPager = findViewById(R.id.view_pager);
-        viewPager.setAdapter(sectionsPagerAdapter);
+        mViewPager = findViewById(R.id.view_pager);
+        mViewPager.setAdapter(sectionsPagerAdapter);
         TabLayout tabs = findViewById(R.id.tabs);
-        tabs.setupWithViewPager(viewPager);
+        tabs.setupWithViewPager(mViewPager);
     }
 
     /**
