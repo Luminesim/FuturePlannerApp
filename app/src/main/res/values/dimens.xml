@@ -12,4 +12,6 @@
     <dimen name="constraint_spacing_smallest">2dp</dimen>
     <dimen name="padding_edit_text_one_line">4dp</dimen>
     <dimen name="padding_store_card">8dp</dimen>
+    <dimen name="fab_bottom_padding_without_ads">14dp</dimen>
+    <dimen name="fab_bottom_padding_with_ads">64dp</dimen>
 </resources>

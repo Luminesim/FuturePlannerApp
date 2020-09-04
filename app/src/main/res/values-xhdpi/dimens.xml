@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="fab_bottom_padding_without_ads">14dp</dimen>
+    <dimen name="fab_bottom_padding_with_ads">104dp</dimen>
+</resources>

@@ -16,9 +16,11 @@ import com.luminesim.futureplanner.purchases.FeatureSet;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Comparator;
@@ -74,8 +76,10 @@ public class FactListActivity extends AppCompatActivity {
                 FeatureSet features = mFeatures.getPurchasedFeatures(false);
                 if (features.isAdvertisingEnabled()) {
                     mAdView.setVisibility(View.VISIBLE);
+                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_with_ads);
                 } else {
                     mAdView.setVisibility(View.GONE);
+                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_without_ads);
                 }
             }
 
@@ -86,8 +90,10 @@ public class FactListActivity extends AppCompatActivity {
                 FeatureSet features = mFeatures.getPurchasedFeatures(false);
                 if (features.isAdvertisingEnabled()) {
                     mAdView.setVisibility(View.VISIBLE);
+                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_with_ads);
                 } else {
                     mAdView.setVisibility(View.GONE);
+                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_without_ads);
                 }
             }
         });

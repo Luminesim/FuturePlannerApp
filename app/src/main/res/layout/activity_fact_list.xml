@@ -52,7 +52,7 @@
                 <com.google.android.gms.ads.AdView
                     android:id="@+id/adView"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     app:adSize="SMART_BANNER"
                     app:adUnitId="ca-app-pub-1047719919485882/3421743873"
@@ -69,7 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="64dp"
+        android:layout_marginBottom="@dimen/fab_bottom_padding_without_ads"
         android:tint="#FFFFFF"
         app:fabSize="auto"
         app:srcCompat="@drawable/ic_baseline_add_24" />

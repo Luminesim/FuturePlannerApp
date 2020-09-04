@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
@@ -227,7 +229,17 @@ public class FeatureManager implements PurchasesUpdatedListener {
 
     @Override
     public void onPurchasesUpdated(@androidx.annotation.NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
-        updateProductsPurchasesAndFeatureLists();
+        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null) {
+
+            list.forEach(purchase -> {
+                Log.i("FeatureManager", "Acknowledging purchase");
+                billingClient.acknowledgePurchase(
+                        AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build(),
+                        result -> {}
+                );
+            });
+            updateProductsPurchasesAndFeatureLists();
+        }
     }
 
     public BillingResult launchBillingFlow(@NonNull Activity activity, @NonNull SkuDetails sku) {
