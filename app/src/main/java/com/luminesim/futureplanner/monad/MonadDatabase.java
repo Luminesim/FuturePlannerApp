@@ -17,7 +17,9 @@ import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 import com.luminesim.futureplanner.monad.types.OnDateMonad;
 import com.luminesim.futureplanner.monad.types.PercentAdditionMonad;
+import com.luminesim.futureplanner.monad.types.PercentAdditionMonadRateToRate;
 import com.luminesim.futureplanner.monad.types.PercentDeductionMonad;
+import com.luminesim.futureplanner.monad.types.PercentDeductionMonadRateToRate;
 
 import org.json.JSONArray;
 
@@ -63,6 +65,8 @@ public final class MonadDatabase {
      * Unique keys of all monads.
      */
     private final Map<Monad, String> mKeys = new HashMap<>();
+
+    private final Map<String, String> mHints = new HashMap<>();
 
     /**
      * Monads associated with each key.
@@ -120,9 +124,10 @@ public final class MonadDatabase {
             @NonNull List<Category> validCategories,
             @NonNull String formatString,
             @NonNull String predictiveView,
+            @NonNull String hint,
             @NonNull Optional<Supplier<AlertDialogFragment>> inputView,
             @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
-        return add(key, monad, validCategories, params -> String.format(formatString, params), predictiveView, inputView, inputProcessor);
+        return add(key, monad, validCategories, params -> String.format(formatString, params), predictiveView, hint, inputView, inputProcessor);
     }
     /**
      * @param key
@@ -140,6 +145,7 @@ public final class MonadDatabase {
             @NonNull List<Category> validCategories,
             @NonNull Function<Object[], String> formatter,
             @NonNull String predictiveView,
+            @NonNull String hint,
             @NonNull Optional<Supplier<AlertDialogFragment>> inputView,
             @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
         mRepo.add(monad);
@@ -159,6 +165,7 @@ public final class MonadDatabase {
         mCategories.put(key, Collections.unmodifiableList(new ArrayList<>(validCategories)));
         mFormatters.put(key, formatter);
         mPredictiveViews.put(key, predictiveView);
+        mHints.put(key, hint);
         mInputViews.put(key, inputView);
         mInputProcessors.put(key, inputProcessor);
         return this;
@@ -299,6 +306,7 @@ public final class MonadDatabase {
                             Arrays.asList(Category.values()),
                             "$%s",
                             context.getString(R.string.monad_money_view_text),
+                            context.getString(R.string.hint_money_amount),
                             Optional.of(() -> new NumericAmountInputFragment()),
                             //Optional.of(R.layout.fragment_numeric_amount_input),
                             (template, inputs) ->
@@ -310,6 +318,20 @@ public final class MonadDatabase {
                             Arrays.asList(Category.values()),
                             "minus %s%%",
                             context.getString(R.string.moand_percent_deduction),
+                            context.getString(R.string.hint_percent_deduction),
+                            Optional.of(() -> new PercentInputFragment()),
+                            (template, inputs) -> {
+                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
+                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
+                            }
+                    );
+                    INSTANCE.add(
+                            "IdPercentRateToRate",
+                            new PercentDeductionMonadRateToRate("Percent"),
+                            Arrays.asList(Category.values()),
+                            "minus %s%%",
+                            context.getString(R.string.moand_percent_deduction),
+                            context.getString(R.string.hint_percent_deduction),
                             Optional.of(() -> new PercentInputFragment()),
                             (template, inputs) -> {
                                 String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
@@ -322,17 +344,55 @@ public final class MonadDatabase {
                             Arrays.asList(Category.values()),
                             "plus %s%%",
                             context.getString(R.string.moand_percent_addition),
+                            context.getString(R.string.hint_percent_addition),
                             Optional.of(() -> new PercentInputFragment()),
                             (template, inputs) -> {
                                 String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
                                 return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
                             }
                     );
-                    INSTANCE.add("IdPerYear", new ToRateMonad(1 / 365.0), Arrays.asList(Category.values()), context.getString(R.string.monad_per_year_view_text), context.getString(R.string.monad_per_year_view_text));
-                    INSTANCE.add("IdPerMonth", new ToRateMonad(1 / (365.0 / 12.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_month_view_text), context.getString(R.string.monad_per_month_view_text));
-                    INSTANCE.add("IdPerWeek", new ToRateMonad(1 / (365.0 / 52.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_week_view_text), context.getString(R.string.monad_per_week_view_text));
-                    INSTANCE.add("IdPerFortnight", new ToRateMonad(1 / (365.0 / 26.0)), Arrays.asList(Category.values()), context.getString(R.string.monad_per_fortnight_view_text), context.getString(R.string.monad_per_fortnight_view_text));
-                    INSTANCE.add("IdPerDay", new ToRateMonad(1.0), Arrays.asList(Category.values()), context.getString(R.string.monad_per_day_view_text), context.getString(R.string.monad_per_day_view_text));
+                    INSTANCE.add(
+                            "IdPercentAdditionRateToRate",
+                            new PercentAdditionMonadRateToRate("Percent"),
+                            Arrays.asList(Category.values()),
+                            "plus %s%%",
+                            context.getString(R.string.moand_percent_addition),
+                            context.getString(R.string.hint_percent_addition),
+                            Optional.of(() -> new PercentInputFragment()),
+                            (template, inputs) -> {
+                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
+                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
+                            }
+                    );
+                    INSTANCE.add("IdPerYear",
+                            new ToRateMonad(1 / 365.0), Arrays.asList(Category.values()),
+                            context.getString(R.string.monad_per_year_view_text),
+                            context.getString(R.string.monad_per_year_view_text),
+                            context.getString(R.string.hint_per_year));
+                    INSTANCE.add("IdPerMonth",
+                            new ToRateMonad(1 / (365.0 / 12.0)),
+                            Arrays.asList(Category.values()),
+                            context.getString(R.string.monad_per_month_view_text),
+                            context.getString(R.string.monad_per_month_view_text),
+                            context.getString(R.string.hint_per_month));
+                    INSTANCE.add("IdPerWeek",
+                            new ToRateMonad(1 / (365.0 / 52.0)),
+                            Arrays.asList(Category.values()),
+                            context.getString(R.string.monad_per_week_view_text),
+                            context.getString(R.string.monad_per_week_view_text),
+                            context.getString(R.string.hint_per_week));
+                    INSTANCE.add("IdPerFortnight",
+                            new ToRateMonad(1 / (365.0 / 26.0)),
+                            Arrays.asList(Category.values()),
+                            context.getString(R.string.monad_per_fortnight_view_text),
+                            context.getString(R.string.monad_per_fortnight_view_text),
+                            context.getString(R.string.hint_per_fortnight));
+                    INSTANCE.add("IdPerDay",
+                            new ToRateMonad(1.0),
+                            Arrays.asList(Category.values()),
+                            context.getString(R.string.monad_per_day_view_text),
+                            context.getString(R.string.monad_per_day_view_text),
+                            context.getString(R.string.hint_per_day));
                     INSTANCE.add(
                             "IdStarting",
                             new StartingMonad("Date"),
@@ -344,6 +404,7 @@ public final class MonadDatabase {
                                 return String.format("starting %s", formattedDate);
                             },
                             context.getString(R.string.monad_starting_view_text),
+                            context.getString(R.string.hint_starting),
                             Optional.of(() -> new CalendarInputFragment()),
                             (template, view) -> {
                                 LocalDate ld = LocalDate.ofEpochDay(((CalendarView) view.findViewById(R.id.datePicker)).getDate() / (24 * 60 * 60 * 1000));
@@ -361,6 +422,7 @@ public final class MonadDatabase {
                                 return String.format("ending %s", formattedDate);
                             },
                             context.getString(R.string.monad_ending_view_text),
+                            context.getString(R.string.hint_ending),
                             Optional.of(() -> new CalendarInputFragment()),
                             (template, view) -> {
                                 LocalDate ld = LocalDate.ofEpochDay(((CalendarView) view.findViewById(R.id.datePicker)).getDate() / (24 * 60 * 60 * 1000));
@@ -379,36 +441,28 @@ public final class MonadDatabase {
                                 return String.format("once on %s", formattedDate);
                             },
                             context.getString(R.string.monad_one_off_view_text),
+                            context.getString(R.string.hint_on_date),
                             Optional.of(() -> new CalendarInputFragment()),
                             (template, view) -> {
                                 LocalDate ld = LocalDate.ofEpochDay(((CalendarView) view.findViewById(R.id.datePicker)).getDate() / (24 * 60 * 60 * 1000));
                                 return template.withParameters(ld.atTime(0, 0));
                             }
                     );
-//                    INSTANCE.add(
-//                            "IdCADOtherIncome",
-//                            new IncomeTypeMonad(IncomeType.CADOtherIncome),
-//                            Arrays.asList(Category.Income),
-//                            context.getString(R.string.monad_income_type_other_income),
-//                            context.getString(R.string.monad_income_type_other_income)
-//                    );
-//                    INSTANCE.add(
-//                            "IdCADUntaxedIncome",
-//                            new IncomeTypeMonad(IncomeType.CADUntaxed),
-//                            Arrays.asList(Category.Income),
-//                            context.getString(R.string.monad_income_type_untaxed_income),
-//                            context.getString(R.string.monad_income_type_untaxed_income)
-//                    );
-
-
                 }
             }
         }
         return INSTANCE;
     }
 
-    private void add(@NonNull String id, @NonNull Monad monad, @NonNull List<Category> validCategories, @NonNull String formatter, @NonNull String predictiveView) {
-        this.add(id, monad, validCategories, formatter, predictiveView, Optional.empty(), (template, view) -> template.withParameters());
+    private void add(@NonNull String id, @NonNull Monad monad, @NonNull List<Category> validCategories, @NonNull String formatter, @NonNull String predictiveView, @NonNull String hint) {
+        this.add(id, monad, validCategories, formatter, predictiveView, hint, Optional.empty(), (template, view) -> template.withParameters());
+    }
+
+    public String getHint(@NonNull String monadId) {
+        if (!mHints.containsKey(monadId)) {
+            throw new IllegalArgumentException("Unknown monad or no hint exists: " + monadId);
+        }
+        return mHints.get(monadId);
     }
 
     /**

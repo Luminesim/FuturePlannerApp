@@ -74,7 +74,7 @@ public class FactEntryActivity extends AppCompatActivity {
         mAdapter = new MonadSelectionView(
                 this,
                 mCategory,
-                (formattedString, monadId, parameters) -> {
+                (formattedString, hint, monadId, parameters) -> {
                     editText.append(" " + formattedString);
                     try {
                         setSaveButtonState();

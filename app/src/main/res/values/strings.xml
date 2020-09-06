@@ -83,6 +83,17 @@
     <string name="error_percent_out_of_0_100_range">Percent must be between 0 and 100.</string>
     <string name="moand_percent_deduction"><![CDATA[minus <percent>]]></string>
     <string name="moand_percent_addition"><![CDATA[plus <percent>]]></string>
+    <string name="hint_money_amount">An amount of money</string>
+    <string name="hint_percent_deduction">Reduces the amount by the given percentage</string>
+    <string name="hint_percent_addition">Increases the amount by the given percentage</string>
+    <string name="hint_per_year">Spreads the amount over the course of a year</string>
+    <string name="hint_per_month">Spreads the amount over the course of a month</string>
+    <string name="hint_per_week">Spreads the amount over the course of a week</string>
+    <string name="hint_per_fortnight">Spreads the amount over the course of a fortnight</string>
+    <string name="hint_per_day">Spreads the amount over the course of a day</string>
+    <string name="hint_starting">Causes the amount to be applied only after the start date</string>
+    <string name="hint_ending">Causes the amount to be applied only before the end date</string>
+    <string name="hint_on_date">Causes the amount to be applied exactly once on the given date</string>
     <string-array name="default_run_duration_array">
         <item>3 months</item>
         <item>6 months</item>

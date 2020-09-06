@@ -35,6 +35,7 @@ public class PercentDeductionMonad extends Monad<Number, Number> {
      */
     @Override
     protected Double apply(Number in, Object[] params) {
+
         // Assign the money value.
         return in.doubleValue() * (1 - (Double) params[0]/100.0);
     }

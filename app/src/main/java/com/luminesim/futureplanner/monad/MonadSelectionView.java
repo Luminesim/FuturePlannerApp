@@ -35,6 +35,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
     private final Callback mCallback;
     private final Category mCategory;
     private List<String> mCurrentPredictiveViews = new ArrayList<>();
+    private List<String> mCurrentHints = new ArrayList<>();
     private List<Monad> mCurrentOptions = new ArrayList<>();
     private MonadInformation mSelectionThusFar = null;
     private MonadDatabase mData;
@@ -78,7 +79,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
      */
     @FunctionalInterface
     public interface Callback {
-        void callback(String summaryText, String monadId, Object[] parameters);
+        void callback(String summaryText, String hint, String monadId, Object[] parameters);
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
@@ -101,6 +102,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         notifyItemRangeRemoved(0, mCurrentPredictiveViews.size());
         mCurrentOptions.clear();
         mCurrentPredictiveViews.clear();
+        mCurrentHints.clear();
         if (mSelectionThusFar == null) {
             mCurrentOptions = mData.getStartingOptions(mCategory);
         } else {
@@ -108,6 +110,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         }
         for (Monad next : mCurrentOptions) {
             mCurrentPredictiveViews.add(mData.getPredictiveText(next));
+            mCurrentHints.add(mData.getHint(mData.getId(next)));
         }
         notifyDataSetChanged();
     }
@@ -118,10 +121,10 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         // create a new view
         View v = LayoutInflater
                 .from(parent.getContext())
-                .inflate(R.layout.view_selectable, parent, false);
+                .inflate(R.layout.view_selectable_with_hint, parent, false);
         PredictiveTextHolder vh = new PredictiveTextHolder(v);
 
-        vh.itemView.findViewById(R.id.chip).setOnClickListener(v1 -> {
+        vh.itemView.findViewById(R.id.layout).setOnClickListener(v1 -> {
             // Determine the selection.
             // Show an alert to get input, if requested.
             if (mData.getInputView(vh.monad).isPresent()) {
@@ -177,7 +180,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         catch (Throwable t) {
             throw new RuntimeException(t);
         }
-        mCallback.callback(summaryText, monadId, params);
+        mCallback.callback(summaryText, mData.getHint(monadId), monadId, params);
         updateMonadList();
     }
 
@@ -197,6 +200,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
             }
             mCallback.callback(
                     mData.format(data),
+                    mData.getHint(data.getMonadId()),
                     data.getMonadId(),
                     data.getParameters(lastSelection.getParameterTypes(), false)
             );
@@ -213,6 +217,7 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         ((TextView)holder.view.findViewById(R.id.chip)).setText(mCurrentPredictiveViews.get(position));
+        ((TextView)holder.view.findViewById(R.id.hint)).setText(mCurrentHints.get(position));
         holder.monad = mCurrentOptions.get(position);
     }
 
