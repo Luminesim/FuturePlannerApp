@@ -84,8 +84,8 @@
     <string name="moand_percent_deduction"><![CDATA[minus <percent>]]></string>
     <string name="moand_percent_addition"><![CDATA[plus <percent>]]></string>
     <string name="hint_money_amount">An amount of money</string>
-    <string name="hint_percent_deduction">Reduces the amount by the given percentage</string>
-    <string name="hint_percent_addition">Increases the amount by the given percentage</string>
+    <string name="hint_percent_deduction">Reduces the amount by the given percentage; useful for things like income taxes or discounts </string>
+    <string name="hint_percent_addition">Increases the amount by the given percentage; useful for things like sales tax or bonuses</string>
     <string name="hint_per_year">Spreads the amount over the course of a year</string>
     <string name="hint_per_month">Spreads the amount over the course of a month</string>
     <string name="hint_per_week">Spreads the amount over the course of a week</string>

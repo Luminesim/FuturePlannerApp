@@ -146,7 +146,12 @@ public class StoreFragment extends Fragment {
             @Override
             public void onProductListReady() {
                 Log.i("FeatureManager", "Product list ready.");
-                showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
+
+                // Note: We do this because sometimes the store can't be contacted if the internet connection is dead
+                // yet an OK is returned (so it seems -- TBD).
+                if (!mFeatureManager.getProductDetailsAndOwnership().isEmpty()) {
+                    showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
+                }
             }
 
             @Override
@@ -173,7 +178,11 @@ public class StoreFragment extends Fragment {
             @Override
             public void onFeaturesUpdated() {
                 Log.i("FeatureManager", "Features updated");
-                showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
+                // Note: We do this because sometimes the store can't be contacted if the internet connection is dead
+                // yet an OK is returned (so it seems -- TBD).
+                if (!mFeatureManager.getProductDetailsAndOwnership().isEmpty()) {
+                    showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
+                }
             }
         });
 
