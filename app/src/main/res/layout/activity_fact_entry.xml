@@ -145,39 +145,33 @@
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/commandEditText"
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/factTextArea"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="90dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="@dimen/constraint_spacing_smallest"
+        android:layout_marginTop="2dp"
         android:layout_marginEnd="16dp"
-        android:background="@color/canvasColor"
-        android:elevation="@dimen/selectable_elevation"
-        android:ems="10"
-        android:focusable="false"
-        android:gravity="start|top"
-        android:hint="@string/hint_select_first_option"
-        android:inputType="none|textMultiLine"
-        android:minLines="@integer/min_lines_long_edit_text"
-        android:padding="@dimen/padding_edit_text"
-        android:textColor="?android:attr/textColorHint"
+        android:background="@drawable/rounded_corner"
+        app:chipSpacing="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textFactLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/textFactLabel">
+
+    </com.google.android.material.chip.ChipGroup>
 
     <TextView
         android:id="@+id/textFactLabel2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:text="@string/label_remaining_options"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/commandEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/factTextArea" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

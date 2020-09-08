@@ -2,10 +2,13 @@ package com.luminesim.futureplanner.ui.main;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,6 +18,8 @@ import android.widget.EditText;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityFact;
@@ -26,7 +31,6 @@ import com.luminesim.futureplanner.monad.MonadSelectionView;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
 import com.luminesim.futureplanner.purchases.FeatureManager;
 import com.luminesim.futureplanner.purchases.FeatureSet;
-import com.luminesim.futureplanner.ui.main.ResultChartAndButtonsFragment;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -44,7 +48,7 @@ public class FactEntryActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private MonadSelectionView mAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private List<MonadData> data = new ArrayList<>();
+    private List<MonadData> mData = new ArrayList<>();
     private EntityRepository mEntities;
     private long mEntityUid;
     private long mFactUid;
@@ -70,21 +74,62 @@ public class FactEntryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        EditText editText = findViewById(R.id.commandEditText);
+        ChipGroup editArea = findViewById(R.id.factTextArea);
         mAdapter = new MonadSelectionView(
                 this,
                 mCategory,
                 (formattedString, hint, monadId, parameters) -> {
-                    editText.append(" " + formattedString);
+                    View v = getLayoutInflater().inflate(R.layout.view_fact_chip, null);
+                    Chip next = ((Chip) v.findViewById(R.id.chip));
+
+                    // This allows us to take a formatted chip and put it into the desired list view
+                    ((ConstraintLayout) v.findViewById(R.id.layout)).removeView(next);
+
+                    // Update the chip's text now that its in the right spot
+                    next.setText(formattedString);
+
+                    // Add the chip to the view, remembering its position
+                    editArea.addView(next);
+                    final int Index = editArea.getChildCount() - 1;
+
+                    // Allow the chip to be edited.
+                    next.setOnClickListener(view -> {
+                        for (int i = 0; i < editArea.getChildCount(); i += 1) {
+                            ((Chip)editArea.getChildAt(i)).setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.canvasColor)));
+                        }
+
+                        if (!next.isChecked()) {
+                            mAdapter.cancelEdit();
+                        }
+                        else {
+                            next.setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.selectionColor)));
+                            mAdapter.editSelection(Index, getSupportFragmentManager(), () -> {
+                                int count = editArea.getChildCount();
+                                editArea.removeViews(Index, editArea.getChildCount() - (Index));
+                                mData = mData.subList(0, Index);
+                                for (int i = 0; i < editArea.getChildCount(); i += 1) {
+                                    ((Chip) editArea.getChildAt(i)).setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.canvasColor)));
+                                }
+
+                            });
+                        }
+                    });
+
+
                     try {
                         setSaveButtonState();
 
                         // Add to the list of data.
-                        MonadData next = new MonadData(monadId, parameters);
-                        data.add(next);
+                        MonadData nextData = new MonadData(monadId, parameters);
+                        mData.add(nextData);
                     } catch (Throwable t) {
                         throw new RuntimeException(t);
                     }
+                },
+                (position) -> {
+
+                    // Dump everything
+                    mData = mData.subList(0, position);
                 });
         recyclerView.setAdapter(mAdapter);
 
@@ -192,7 +237,7 @@ public class FactEntryActivity extends AppCompatActivity {
                 runOnUiThread(() -> ((EditText) findViewById(R.id.textFactName)).setText(data.getFact().getName()));
 
                 // Enter the details one by one.
-                runOnUiThread(() -> ((EditText)findViewById(R.id.commandEditText)).setText(""));
+                runOnUiThread(() -> ((ChipGroup) findViewById(R.id.factTextArea)).removeAllViews());
                 data.getDetails().forEach(detail -> {
                     runOnUiThread(() -> mAdapter.triggerCallbackAndUpdateMonadList(detail));
                 });
@@ -236,11 +281,11 @@ public class FactEntryActivity extends AppCompatActivity {
 
             // Collect all details.
             List<EntityFactDetail> details = new LinkedList<>();
-            for (int i = 0; i < data.size(); i += 1) {
+            for (int i = 0; i < mData.size(); i += 1) {
                 EntityFactDetail detail = EntityFactDetail
                         .builder()
                         .stepNumber(i)
-                        .monadJson(data.get(i).toJson())
+                        .monadJson(mData.get(i).toJson())
                         .build();
                 details.add(detail);
             }
@@ -249,8 +294,13 @@ public class FactEntryActivity extends AppCompatActivity {
             mEntities.updateFact(mEntityUid, fact, details, () -> {
                 // All done.
                 Intent out = new Intent();
-                EditText editText = findViewById(R.id.commandEditText);
-                out.putExtra(EXTRA_FORMATTED_TEXT, editText.getText().toString());
+                ChipGroup result = findViewById(R.id.factTextArea);
+                String text = "";
+                for (int i = 0; i < result.getChildCount(); i += 1) {
+                    text += result.getChildAt(i).toString() + " ";
+                }
+                text.trim();
+                out.putExtra(EXTRA_FORMATTED_TEXT, text);
                 out.putExtra(ResultChartAndButtonsFragment.EXTRA_SIMULATION_FACTS_CHANGED, true);
                 out.putExtra(EXTRA_NAME, name);
                 setResult(RESULT_OK, out);
@@ -263,9 +313,9 @@ public class FactEntryActivity extends AppCompatActivity {
      * Called when the user taps the clear button
      */
     public void clearSelection(@NonNull View view) {
-        EditText editText = findViewById(R.id.commandEditText);
-        editText.setText("");
-        data.clear();
+        ChipGroup editArea = findViewById(R.id.factTextArea);
+        editArea.removeAllViews();
+        mData.clear();
         mAdapter.restartSelection();
         setSaveButtonState();
     }
