@@ -45,7 +45,8 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
     private int mSelectionPosition = 0;
     private MonadDatabase mData;
     private Consumer<Integer> mOnFutureOptionsIncompatible;
-    private Runnable mOnEdit = () -> {};
+    private Runnable mOnEdit = () -> {
+    };
 
 //    public interface OnEditListener {
 //        public void onEdit(String monadId, int position, Object[] newParameters);
@@ -78,16 +79,15 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         if (index < 0) {
             throw new IllegalArgumentException("Index must be non-negative");
         }
-        if (index >= mStack.size()) {
-            throw new IllegalArgumentException("Index exceeds stack size");
+        if (index > mStack.size()) {
+            throw new IllegalArgumentException("Index "+index+" exceeds stack size " + mStack.size());
         }
 
         this.mOnEdit = onEdit;
         // Rewind to the selection so it can be replaced.
         if (index == 0) {
             mSelectionThusFar = null;
-        }
-        else {
+        } else {
             mSelectionThusFar = mData.getMonadById(mStack.get(0).getMonadId()).getInfo();
             for (int i = 1; i < index; i += 1) {
                 mSelectionThusFar = mSelectionThusFar.getMutableCompositionInfo(mData.getMonadById(mStack.get(i).getMonadId()));
@@ -242,10 +242,12 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
     private void advanceOrUpdateStack(StackFrame frame) {
         if (mSelectionPosition == mStack.size()) {
             mStack.add(frame);
-            mOnEdit = () -> {};
+            mOnEdit = () -> {
+            };
         } else {
             mOnEdit.run();
-            mOnEdit = () -> {};
+            mOnEdit = () -> {
+            };
             mStack.get(mSelectionPosition).setMonadId(frame.getMonadId());
             mStack.get(mSelectionPosition).setParams(frame.getParams());
         }
@@ -312,11 +314,17 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
 
         // If we've edited something, ensure that we can rebuild up to the end of the statement.
         while (mSelectionPosition < mStack.size()) {
-            // Safe to continue? Do so.
-            if (mData.getNextOptions(mSelectionThusFar, mCategory).contains(mData.getMonadById(mStack.get(mSelectionPosition).getMonadId()))) {
+            // If this is the first item, we may not have set a selection. If so, do it.
+            if (mSelectionThusFar == null && mSelectionPosition == 0) {
+//                mSelectionThusFar = mData.getMonadById(mStack.get(mSelectionPosition).getMonadId()).getInfo();
+                triggerCallbackAndUpdateMonadList(mStack.get(0));
+            }
+            // If the next option is safe to use then use it.
+            else if (mData.getNextOptions(mSelectionThusFar, mCategory).contains(mData.getMonadById(mStack.get(mSelectionPosition).getMonadId()))) {
                 triggerCallbackAndUpdateMonadList(mStack.get(mSelectionPosition));
-            } else {
-                // Otherwise, nuke everything from hereafter.
+            }
+            // Otherwise, nuke everything from hereafter.
+            else {
                 mOnFutureOptionsIncompatible.accept(mSelectionPosition);
                 mStack = mStack.subList(0, mSelectionPosition);
             }
