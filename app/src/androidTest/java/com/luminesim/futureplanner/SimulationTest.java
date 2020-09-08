@@ -11,10 +11,11 @@ import com.luminesim.futureplanner.db.EntityDao;
 import com.luminesim.futureplanner.db.EntityDatabase;
 import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityFactDetail;
+import com.luminesim.futureplanner.db.EntityParameter;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.monad.MonadData;
-import com.luminesim.futureplanner.simulation.CanadianIndividualIncomeSimulation;
+import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +23,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -38,9 +42,10 @@ import static org.junit.Assert.assertTrue;
 public class SimulationTest {
     private Context mContext;
     private EntityDao dao;
-    private EntityWithFacts mEntity;
+    private EntityWithFacts mPerson;
     private EntityDatabase db;
-    private final double DELTA = 500.0;
+    final double Tol = 500.00;
+    private SimpleIndividualIncomeSimulation mSimulation;
 
     public void createDb() {
         db = Room.inMemoryDatabaseBuilder(mContext, EntityDatabase.class).allowMainThreadQueries().build();
@@ -56,131 +61,232 @@ public class SimulationTest {
     public void setUp() {
         mContext = ApplicationProvider.getApplicationContext();
         createDb();
-    }
 
-    private EntityWithFacts create120KIncomePerson() {
         // Create test user
-        Entity toAdd = Entity.builder().name("User").build();
+        Entity toAdd = Entity.builder().name("User").type(SimpleIndividualIncomeSimulation.ENTITY_TYPE).build();
         long userId = dao.insert(toAdd);
+        EntityParameter param = EntityParameter
+                .builder()
+                .entityUid(userId)
+                .name(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS)
+                .value("0.0")
+                .build();
+        dao.insert(param);
+        mPerson = dao.getEntity(userId);
 
-        // Create test facts.
-        EntityFact incomeFact = EntityFact.builder().category(Category.Income).entityUid(userId).name("Work").build();
-        EntityFact expenseFact = EntityFact.builder().category(Category.Expenses).entityUid(userId).name("Food").build();
-        long incomeFactUid = dao.insert(incomeFact);
-        long expenseFactUid = dao.insert(expenseFact);
-
-        // Create test fact details.
-        EntityFactDetail incomeFactStep0 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 120_000.00)).toJson()).build();
-        EntityFactDetail incomeFactStep1 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(1).monadJson((new MonadData("IdPerYear")).toJson()).build();
-        dao.insert(incomeFactStep0);
-        dao.insert(incomeFactStep1);
-//        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
-//        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
-//        dao.insert(expenseFactStep0);
-//        dao.insert(expenseFactStep1);
-
-        return dao.getEntity(userId);
     }
 
-    private EntityWithFacts create50KIncomePerson() {
-        // Create test user
-        Entity toAdd = Entity.builder().name("User").build();
-        long userId = dao.insert(toAdd);
-
-        // Create test facts.
-        EntityFact incomeFact = EntityFact.builder().category(Category.Income).entityUid(userId).name("Work").build();
-        EntityFact expenseFact = EntityFact.builder().category(Category.Expenses).entityUid(userId).name("Food").build();
-        long incomeFactUid = dao.insert(incomeFact);
-        long expenseFactUid = dao.insert(expenseFact);
-
-        // Create test fact details.
-        EntityFactDetail incomeFactStep0 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 50_000.00)).toJson()).build();
-        EntityFactDetail incomeFactStep1 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(1).monadJson((new MonadData("IdPerYear")).toJson()).build();
-        dao.insert(incomeFactStep0);
-        dao.insert(incomeFactStep1);
-//        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
-//        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
-//        dao.insert(expenseFactStep0);
-//        dao.insert(expenseFactStep1);
-
-        return dao.getEntity(userId);
+    public double getFunds() {
+        return (Double) mSimulation.getRoot().getNumericSDDiagram("Money").get("Funds");
     }
 
-    private EntityWithFacts create10KIncomePerson() {
-        // Create test user
-        Entity toAdd = Entity.builder().name("User").build();
-        long userId = dao.insert(toAdd);
-
-        // Create test facts.
-        EntityFact incomeFact = EntityFact.builder().category(Category.Income).entityUid(userId).name("Work").build();
-        EntityFact expenseFact = EntityFact.builder().category(Category.Expenses).entityUid(userId).name("Food").build();
-        long incomeFactUid = dao.insert(incomeFact);
-        long expenseFactUid = dao.insert(expenseFact);
-
-        // Create test fact details.
-        EntityFactDetail incomeFactStep0 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 10_000.00)).toJson()).build();
-        EntityFactDetail incomeFactStep1 = EntityFactDetail.builder().entityFactUid(incomeFactUid).stepNumber(1).monadJson((new MonadData("IdPerYear")).toJson()).build();
-        dao.insert(incomeFactStep0);
-        dao.insert(incomeFactStep1);
-//        EntityFactDetail expenseFactStep0 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(0).monadJson((new MonadData("IdMoneyAmount", 200.00)).toJson()).build();
-//        EntityFactDetail expenseFactStep1 = EntityFactDetail.builder().entityFactUid(expenseFactUid).stepNumber(1).monadJson((new MonadData("IdPerWeek")).toJson()).build();
-//        dao.insert(expenseFactStep0);
-//        dao.insert(expenseFactStep1);
-
-        return dao.getEntity(userId);
-    }
-
-    /**
-     * Runs a simple simulation with a single 120K income.
-     * Should be able to calculate this amount.
-     *
-     * @throws Exception
-     */
     @Test
-    public void simpleCAD120KIncome_shouldCalculateCorrectAmount() throws Exception {
-        // Set up the simulation.
-        mEntity = create120KIncomePerson();
-        CanadianIndividualIncomeSimulation job = new CanadianIndividualIncomeSimulation(mContext, mEntity.getEntity().getUid());
-        job.setRepo(new EntityRepository(mContext, db));
-        job.run();
+    public void singleIncomePA_noExpenses_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00).perYear();
+        runForOneYear();
 
-        // Ensure that funds at the end of the run are what we expect.
-        assertEquals("Expected the correct income calculation.", 83_566, (Double)job.getRoot().getNumericSDDiagram("Money").get("Funds"), DELTA);
+        // Ensure income correctly calculated.
+        final double Tol = 500.00;
+        assertEquals("Funds incorrect", 100_000.00, getFunds(), Tol);
     }
 
-    /**
-     * Runs a simple simulation with a single 50K income.
-     * Should be able to calculate this amount.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void simpleCAD50KIncome_shouldCalculateCorrectAmount() throws Exception {
-        // Set up the simulation.
-        mEntity = create50KIncomePerson();
-        CanadianIndividualIncomeSimulation job = new CanadianIndividualIncomeSimulation(mContext, mEntity.getEntity().getUid());
-        job.setRepo(new EntityRepository(mContext, db));
-        job.run();
-
-        // Ensure that funds at the end of the run are what we expect.
-        assertEquals("Expected the correct income calculation.", 38_339, (Double)job.getRoot().getNumericSDDiagram("Money").get("Funds"), DELTA);
+    private void runForOneYear() {
+        int daysToRun = 365;
+        mSimulation = new SimpleIndividualIncomeSimulation(daysToRun, mContext, mPerson.getEntity().getUid());
+        mSimulation.setRepo(new EntityRepository(mContext, db));
+        mSimulation.run();
     }
 
-    /**
-     * Runs a simple simulation with a single 10K income.
-     * Should be able to calculate this amount.
-     *
-     * @throws Exception
-     */
     @Test
-    public void simpleCAD10KIncome_shouldCalculateCorrectAmount() throws Exception {
-        // Set up the simulation.
-        mEntity = create10KIncomePerson();
-        CanadianIndividualIncomeSimulation job = new CanadianIndividualIncomeSimulation(mContext, mEntity.getEntity().getUid());
-        job.setRepo(new EntityRepository(mContext, db));
-        job.run();
+    public void singleIncomePM_noExpenses_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00 / 12.0).perMonth();
+        runForOneYear();
 
-        // Ensure that funds at the end of the run are what we expect.
-        assertEquals("Expected the correct income calculation.", 9_507, (Double)job.getRoot().getNumericSDDiagram("Money").get("Funds"), DELTA);
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 100_000.00, getFunds(), Tol);
+    }
+
+    @Test
+    public void singleIncomePF_noExpenses_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00 / 26.0).perFortnight();
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 100_000.00, getFunds(), Tol);
+    }
+
+    @Test
+    public void multiIncome_multiExpenses_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00).perYear().starting(nDays(365 / 2)); // -> $50K
+        addExpense("Rent").amount(2000).perMonth().ending(nDays(365 / 2)); // -> $50K - 12K = 38K
+        addExpense("Food").amount(2000).perMonth(); // -> $38K - 24K = 14K
+        addIncome("Gigs").amount(100.00).perDay().ending(nDays(100)); // -> 14K + $10K = 24k
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 24_000.00, getFunds(), Tol);
+    }
+
+
+    @Test
+    public void flowsStartBeforeSimulation_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00).perYear().starting(nDays(-1 * 365));
+        addExpense("Expense").amount(50_000.00).perYear().starting(nDays(-1 * 365));
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 50_000.00, getFunds(), Tol);
+    }
+
+    @Test
+    public void flowsStartAfterSimulation_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00).perYear().starting(nDays(2 + 365));
+        addIncome("Expense").amount(50_000.00).perYear().starting(nDays(2 + 365));
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 0.00, getFunds(), Tol);
+    }
+
+    @Test
+    public void flowsHaveInvertedStartEnd_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income").amount(100_000.00).perYear().starting(nDays(30)).ending(nDays(10));
+        addIncome("Expense").amount(50_000.00).perYear().starting(nDays(30)).ending(nDays(10));
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 0.00, getFunds(), Tol);
+    }
+
+    @Test
+    public void flowsHaveMinusAndPlusBeforeAfterRate_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income")
+                .amount(100_000.00) // 100k
+                .preRatePlus(50.0) // 150k
+                .preRateMinus(50.0) // 75k
+                .perYear()
+                .postRateMinus(33.00) // 50k
+                .postRateMinus(50.0) // 25k
+                .postRatePlus(50) // 37.5k
+                .starting(nDays(365/2)); // 18.75k
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 18_750.00, getFunds(), Tol);
+    }
+
+    @Test
+    public void onDateHasMinusAndPlusBeforeAfterRate_shouldCalculateCorrectAmount() {
+        // Person parameters.
+        addIncome("Income")
+                .amount(100_000.00) // 100k
+                .preRatePlus(50.0) // 150k
+                .preRateMinus(50.0) // 75k
+                .preRateMinus(33.0) // 50K
+                .once(nDays(123));
+        runForOneYear();
+
+        // Ensure income correctly calculated.
+        assertEquals("Funds incorrect", 50_000.00, getFunds(), Tol);
+    }
+
+    private LocalDateTime nDays(int n) {
+        return LocalDateTime.now().plus(n, ChronoUnit.DAYS);
+    }
+
+    private FactBuilder addIncome(String name) {
+        return new FactBuilder(Category.Income, name);
+    }
+
+    private FactBuilder addExpense(String name) {
+        return new FactBuilder(Category.Expenses, name);
+    }
+
+    private class FactBuilder {
+
+        private long factUid;
+        private AtomicInteger stepNumber = new AtomicInteger(0);
+
+        private FactBuilder(Category category, String name) {
+            EntityFact toAdd = EntityFact.builder()
+                    .category(category)
+                    .entityUid(mPerson.getEntity().getUid())
+                    .name(name)
+                    .build();
+            factUid = dao.insert(toAdd);
+        }
+
+        private EntityFactDetail detail(MonadData data) {
+            return EntityFactDetail.builder().entityFactUid(factUid).stepNumber(stepNumber.getAndIncrement()).monadJson(data.toJson()).build();
+        }
+
+        private FactBuilder amount(double amount) {
+            dao.insert(detail(new MonadData("IdMoneyAmount", amount)));
+            return this;
+        }
+
+        private FactBuilder perYear() {
+            dao.insert(detail(new MonadData("IdPerYear")));
+            return this;
+
+        }
+
+        private FactBuilder perMonth() {
+            dao.insert(detail(new MonadData("IdPerMonth")));
+            return this;
+        }
+
+        private FactBuilder perFortnight() {
+            dao.insert(detail(new MonadData("IdPerFortnight")));
+            return this;
+        }
+
+        private FactBuilder starting(LocalDateTime dt) {
+            dao.insert(detail(new MonadData("IdStarting", dt)));
+            return this;
+        }
+
+        private FactBuilder ending(LocalDateTime dt) {
+            dao.insert(detail(new MonadData("IdEnding", dt)));
+            return this;
+        }
+
+        private FactBuilder once(LocalDateTime dt) {
+            dao.insert(detail(new MonadData("IdOnDate", dt)));
+            return this;
+        }
+
+        public FactBuilder perDay() {
+            dao.insert(detail(new MonadData("IdPerDay")));
+            return this;
+        }
+
+        public FactBuilder preRateMinus(double percent) {
+            dao.insert(detail(new MonadData("IdPercentDeduction", percent)));
+            return this;
+        }
+
+        public FactBuilder postRateMinus(double percent) {
+            dao.insert(detail(new MonadData("IdPercentRateToRate", percent)));
+            return this;
+        }
+
+        public FactBuilder preRatePlus(double percent) {
+            dao.insert(detail(new MonadData("IdPercentAddition", percent)));
+            return this;
+        }
+
+        public FactBuilder postRatePlus(double percent) {
+            dao.insert(detail(new MonadData("IdPercentAdditionRateToRate", percent)));
+            return this;
+        }
     }
 }

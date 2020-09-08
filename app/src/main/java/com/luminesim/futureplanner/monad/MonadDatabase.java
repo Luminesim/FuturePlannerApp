@@ -326,6 +326,7 @@ public final class MonadDatabase {
                             }
                     );
                     INSTANCE.add(
+                            // TODO FIXME: Got the key wrong, needs to be updated in DB...
                             "IdPercentRateToRate",
                             new PercentDeductionMonadRateToRate("Percent"),
                             Arrays.asList(Category.values()),
