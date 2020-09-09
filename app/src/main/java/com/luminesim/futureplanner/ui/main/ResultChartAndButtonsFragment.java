@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.android.billingclient.api.BillingResult;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
@@ -51,6 +50,8 @@ import java.util.concurrent.Executors;
 public class ResultChartAndButtonsFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
+
+    private boolean firsrtRunAttempted = false;
 
     private PageViewModel pageViewModel;
     private AdView mAdView;
@@ -99,17 +100,20 @@ public class ResultChartAndButtonsFragment extends Fragment {
         mChart = getActivity().findViewById(R.id.chartArea);
 
         long entityUid = getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l);
-        mRepo.getEntity(entityUid, entityWithFacts -> {
-            getActivity().runOnUiThread(() -> {
-                String initialFunds = entityWithFacts.getParameter(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS).get();
-                mAmount.setText(initialFunds);
-                Log.i("FUNDS", "initialFunds: " + initialFunds);
-                mChart.setNoDataText("Tap start button");
+        if (!firsrtRunAttempted) {
+            mRepo.getEntity(entityUid, entityWithFacts -> {
+                getActivity().runOnUiThread(() -> {
+                    String initialFunds = entityWithFacts.getParameter(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS).get();
+                    mAmount.setText(initialFunds);
+                    Log.i("FUNDS", "initialFunds: " + initialFunds);
+                    mChart.setNoDataText("Tap start button");
 
-                // Run the simulation.
-                onStartButtonPressed(getView());
+                    // Run the simulation.
+                    onStartButtonPressed(getView());
+                });
             });
-        });
+            firsrtRunAttempted = true;
+        }
     }
 
     public void onStartButtonPressed(View view) {

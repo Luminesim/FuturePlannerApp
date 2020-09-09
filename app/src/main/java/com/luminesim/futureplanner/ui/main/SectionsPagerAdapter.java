@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
+import com.luminesim.futureplanner.AboutFragment;
 import com.luminesim.futureplanner.R;
 
 /**
@@ -17,7 +18,7 @@ import com.luminesim.futureplanner.R;
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @StringRes
-    private static final int[] TAB_TITLES = new int[]{R.string.tab_text_1, R.string.tab_text_2};
+    private static final int[] TAB_TITLES = new int[]{R.string.tab_text_1, R.string.tab_text_2, R.string.tab_text_3};
     private final Context mContext;
 
     public SectionsPagerAdapter(Context context, FragmentManager fm) {
@@ -33,6 +34,8 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
                 return ResultChartAndButtonsFragment.newInstance();
             case 1:
                 return StoreFragment.newInstance();
+            case 2:
+                return AboutFragment.newInstance();
             default:
                 throw new Error("Unhandled tab position: " + position);
         }

@@ -94,6 +94,27 @@
     <string name="hint_starting">Causes the amount to be applied only after the start date</string>
     <string name="hint_ending">Causes the amount to be applied only before the end date</string>
     <string name="hint_on_date">Causes the amount to be applied exactly once on the given date</string>
+    <string name="label_about">About</string>
+    <string name="label_disclaimer">Disclaimer &amp; Terms</string>
+    <string name="long_text_disclaimer">"FuturePlanner (the "Software") is tool for rapidly exploring ideas. It is NOT a substitute for a financial planner.  Always consult a registered financial planner before making any important life or financial decisions.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. BY USING THE SOFTWARE YOU AGREE AND CONSENT TO THESE TERMS.
+
+    </string>
+    <string name="long_text_about">
+        FuturePlanner is authored and brought to you by Luminesim Simulation and Analytics (www.luminesim.com).
+        We build simulation tools with clients to explore new policy ideas and to rethink and improve the systems that affect our lives.
+        If you want test your vision for change in a risk-free environment before bringing it to the real world, we want to hear from you.
+        Contact us today at info@luminesim.com.
+    </string>
+    <string name="tab_text_3">About</string>
+    <string name="label_licenses">Licenses</string>
+    <string name="long_text_licenses" >"FuturePlanner makes use of the following external projects:
+MPAndroidChart (www.github.com/PhilJay/MPAndroidChart)
+Project Lombok (www.projectlombok.org)
+SimpleFlatMapper (www.simpleflatmapper.org)
+SLF4J (www.slf4j.org)"
+    </string>
     <string-array name="default_run_duration_array">
         <item>3 months</item>
         <item>6 months</item>
