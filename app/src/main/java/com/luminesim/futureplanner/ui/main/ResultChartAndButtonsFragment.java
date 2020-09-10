@@ -51,7 +51,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
 
-    private boolean firsrtRunAttempted = false;
+    private long lastAutoRunTimeMs = 0l;
 
     private PageViewModel pageViewModel;
     private AdView mAdView;
@@ -100,7 +100,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
         mChart = getActivity().findViewById(R.id.chartArea);
 
         long entityUid = getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l);
-        if (!firsrtRunAttempted) {
+        if (System.currentTimeMillis() - lastAutoRunTimeMs > 100) {
             mRepo.getEntity(entityUid, entityWithFacts -> {
                 getActivity().runOnUiThread(() -> {
                     String initialFunds = entityWithFacts.getParameter(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS).get();
@@ -112,7 +112,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
                     onStartButtonPressed(getView());
                 });
             });
-            firsrtRunAttempted = true;
+            lastAutoRunTimeMs = System.currentTimeMillis();
         }
     }
 
