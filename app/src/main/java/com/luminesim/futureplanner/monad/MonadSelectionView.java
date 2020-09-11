@@ -1,5 +1,6 @@
 package com.luminesim.futureplanner.monad;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -188,8 +189,13 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
             AlertDialogFragment f = mData.getInputView(monad).get().get();
 
             f.setPositiveButtonCallback(view -> {
-                ComputableMonad result = mData.processInput(monad, view);
-                triggerCallbackAndUpdateMonadList(mData.format(monad, result.getParameterValues()), mData.getId(monad), result.getParameterValues());
+                try {
+                    ComputableMonad result = mData.processInput(monad, view);
+                    triggerCallbackAndUpdateMonadList(mData.format(monad, result.getParameterValues()), mData.getId(monad), result.getParameterValues());
+                }
+                catch (Throwable t) {
+                    Log.e("FuturePlanner Monad Selection", t.getLocalizedMessage());
+                }
             });
             f.show(fragmentManager, "Input");
         }

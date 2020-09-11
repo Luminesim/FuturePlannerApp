@@ -1,6 +1,7 @@
 package com.luminesim.futureplanner.ui.main;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -341,5 +342,12 @@ public class FactEntryActivity extends AppCompatActivity {
         out.putExtra(ResultChartAndButtonsFragment.EXTRA_SIMULATION_FACTS_CHANGED, simulationInputsChanged);
         setResult(RESULT_OK_FACT_DELETED, out);
         finish();
+    }
+
+    public void showChipgroupHint(@NonNull View view) {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.hint_autocomplete)
+                .setNeutralButton(R.string.button_ok, (x,y) -> {})
+                .show();
     }
 }

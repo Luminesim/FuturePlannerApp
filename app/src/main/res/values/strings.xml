@@ -115,6 +115,7 @@ Project Lombok (www.projectlombok.org)
 SimpleFlatMapper (www.simpleflatmapper.org)
 SLF4J (www.slf4j.org)"
     </string>
+    <string name="hint_autocomplete">Tap one of the options below to get started. Try \"amount\" to enter a dollar amount.</string>
     <string-array name="default_run_duration_array">
         <item>3 months</item>
         <item>6 months</item>
