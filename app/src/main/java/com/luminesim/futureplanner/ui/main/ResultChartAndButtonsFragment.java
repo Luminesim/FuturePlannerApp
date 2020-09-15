@@ -322,38 +322,6 @@ public class ResultChartAndButtonsFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-
-        if (mFeatures == null) {
-            mFeatures = new FeatureManager(getContext());
-            mFeatures.listen(new FeatureManager.FeatureManagerListener() {
-                @Override
-                public void onProductListReady() {
-                }
-
-                @Override
-                public void onFeaturesUpdated() {
-                    mLatestFeatures = mFeatures.getPurchasedFeatures(false);
-                    if (mLatestFeatures.isAdvertisingEnabled()) {
-                        mAdView.setVisibility(View.VISIBLE);
-                    } else {
-                        mAdView.setVisibility(View.GONE);
-                    }
-                }
-
-                @Override
-                public void onErrorLoadingFeatures() {
-                    if (mAdView == null)
-                        return;
-                    mLatestFeatures = mFeatures.getPurchasedFeatures(false);
-                    if (mLatestFeatures.isAdvertisingEnabled()) {
-                        mAdView.setVisibility(View.VISIBLE);
-                    } else {
-                        mAdView.setVisibility(View.GONE);
-                    }
-                }
-            });
-        }
     }
 
     @Override
@@ -390,6 +358,39 @@ public class ResultChartAndButtonsFragment extends Fragment {
             mAdView.loadAd(adRequest);
             mAdView.setVisibility(View.GONE);
         });
+
+
+        if (mFeatures == null) {
+            mFeatures = new FeatureManager(getContext());
+            mFeatures.listen(new FeatureManager.FeatureManagerListener() {
+                @Override
+                public void onProductListReady() {
+                }
+
+                @Override
+                public void onFeaturesUpdated() {
+                    mLatestFeatures = mFeatures.getPurchasedFeatures(false);
+                    if (mLatestFeatures.isAdvertisingEnabled()) {
+                        mAdView.setVisibility(View.VISIBLE);
+                    } else {
+                        mAdView.setVisibility(View.GONE);
+                    }
+                }
+
+                @Override
+                public void onErrorLoadingFeatures() {
+                    if (mAdView == null)
+                        return;
+                    mLatestFeatures = mFeatures.getPurchasedFeatures(false);
+                    if (mLatestFeatures.isAdvertisingEnabled()) {
+                        mAdView.setVisibility(View.VISIBLE);
+                    } else {
+                        mAdView.setVisibility(View.GONE);
+                    }
+                }
+            });
+        }
+
         return root;
     }
 }

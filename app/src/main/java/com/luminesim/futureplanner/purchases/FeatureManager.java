@@ -63,11 +63,11 @@ public class FeatureManager implements PurchasesUpdatedListener {
     @Getter
     private Set<FeatureManagerListener> listeners = new HashSet<>();
 
-//    /**
-//     * WARNING: THIS METHOD WILL CONSUME ALL PURCHASES THE USER HAS MADE.
-//     * THIS SHOULD ONLY EVER BE EXECUTED IN TEST.
-//     */
-//    private void consumeAllPurchases() {
+    /**
+     * WARNING: THIS METHOD WILL CONSUME ALL PURCHASES THE USER HAS MADE.
+     * THIS SHOULD ONLY EVER BE EXECUTED IN TEST.
+     */
+//    public void consumeAllPurchases() {
 //            purchases.values().forEach(purchase -> {
 //            ConsumeParams consumeParams =
 //                    ConsumeParams.newBuilder()
