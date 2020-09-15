@@ -12,6 +12,7 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
@@ -61,6 +62,22 @@ public class FeatureManager implements PurchasesUpdatedListener {
 
     @Getter
     private Set<FeatureManagerListener> listeners = new HashSet<>();
+
+//    /**
+//     * WARNING: THIS METHOD WILL CONSUME ALL PURCHASES THE USER HAS MADE.
+//     * THIS SHOULD ONLY EVER BE EXECUTED IN TEST.
+//     */
+//    private void consumeAllPurchases() {
+//            purchases.values().forEach(purchase -> {
+//            ConsumeParams consumeParams =
+//                    ConsumeParams.newBuilder()
+//                            .setPurchaseToken(purchase.getPurchaseToken())
+//                            .build();
+//            billingClient.consumeAsync(consumeParams, (billingResult, s) -> {
+//                Log.i("FeatureManager CONSUME ALL", billingResult.toString());
+//            });
+//        });
+//    }
 
     public FeatureManager(@NonNull Context context) {
 

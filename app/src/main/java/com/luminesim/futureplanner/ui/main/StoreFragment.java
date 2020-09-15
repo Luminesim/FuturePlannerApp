@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,51 +142,64 @@ public class StoreFragment extends Fragment {
 //            });
         });
 
-        mFeatureManager = new FeatureManager(getContext());
-        Log.i("FeatureManager", "Created");
-        mFeatureManager.listen(new FeatureManager.FeatureManagerListener() {
-            @Override
-            public void onProductListReady() {
-                Log.i("FeatureManager", "Product list ready.");
+        if (mFeatureManager == null) {
 
-                // Note: We do this because sometimes the store can't be contacted if the internet connection is dead
-                // yet an OK is returned (so it seems -- TBD).
-                if (!mFeatureManager.getProductDetailsAndOwnership().isEmpty()) {
-                    showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
-                }
-            }
+            mFeatureManager = new FeatureManager(getContext());
 
-            @Override
-            public void onConnectionOpened(BillingResult newStatus) {
-                Log.i("FeatureManager", "Connection open");
+//            AtomicBoolean testFlag = new AtomicBoolean(true);
 
-            }
+            Log.i("FeatureManager", "Created");
+            mFeatureManager.listen(new FeatureManager.FeatureManagerListener() {
+                @Override
+                public void onProductListReady() {
+                    Log.i("FeatureManager", "Product list ready.");
 
-            @Override
-            public void onConnectionClosed() {
-                Log.i("FeatureManager", "Connection closed. Trying to reopen in " + delayTime.get() + "ms.");
-                retryThread = new Thread(() -> {
-                    try {
-                        Thread.sleep(delayTime.get());
-                        delayTime.set(delayTime.get() * 2);
-                        mFeatureManager.tryConnectBillingClient();
-                    } catch (Throwable t) {
-
+                    // Note: We do this because sometimes the store can't be contacted if the internet connection is dead
+                    // yet an OK is returned (so it seems -- TBD).
+                    if (!mFeatureManager.getProductDetailsAndOwnership().isEmpty()) {
+                        showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
                     }
-                });
-                retryThread.start();
-            }
 
-            @Override
-            public void onFeaturesUpdated() {
-                Log.i("FeatureManager", "Features updated");
-                // Note: We do this because sometimes the store can't be contacted if the internet connection is dead
-                // yet an OK is returned (so it seems -- TBD).
-                if (!mFeatureManager.getProductDetailsAndOwnership().isEmpty()) {
-                    showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
+                    // !!! XXX TEST PURPOSES ONLY !!!
+//                    if (testFlag.get()) {
+//                        testFlag.set(false);
+//                        mFeatureManager.consumeAllPurchases();
+//                    }
+                    // !!! END !!!
                 }
-            }
-        });
+
+                @Override
+                public void onConnectionOpened(BillingResult newStatus) {
+                    Log.i("FeatureManager", "Connection open");
+
+                }
+
+                @Override
+                public void onConnectionClosed() {
+                    Log.i("FeatureManager", "Connection closed. Trying to reopen in " + delayTime.get() + "ms.");
+                    retryThread = new Thread(() -> {
+                        try {
+                            Thread.sleep(delayTime.get());
+                            delayTime.set(delayTime.get() * 2);
+                            mFeatureManager.tryConnectBillingClient();
+                        } catch (Throwable t) {
+
+                        }
+                    });
+                    retryThread.start();
+                }
+
+                @Override
+                public void onFeaturesUpdated() {
+                    Log.i("FeatureManager", "Features updated");
+                    // Note: We do this because sometimes the store can't be contacted if the internet connection is dead
+                    // yet an OK is returned (so it seems -- TBD).
+                    if (!mFeatureManager.getProductDetailsAndOwnership().isEmpty()) {
+                        showStoreItems(mFeatureManager.getProductDetailsAndOwnership());
+                    }
+                }
+            });
+        }
 
         return mList;
     }

@@ -44,7 +44,7 @@ public class ResultsActivity extends AppCompatActivity implements CanNavigateToS
 
     @Override
     public void navigateToStore(FeatureSet featureFilter) {
-        mViewPager.setCurrentItem(StoreFragment.PAGE_INDEX);
+        mViewPager.setCurrentItem(StoreFragment.PAGE_INDEX - 1);
     }
 
     @Override
