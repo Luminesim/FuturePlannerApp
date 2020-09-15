@@ -185,6 +185,7 @@ public class FeatureManager implements PurchasesUpdatedListener {
     public FeatureSet getPurchasedFeatures(boolean checkForUpdates) {
         if (checkForUpdates)
             updateProductsPurchasesAndFeatureLists();
+
         FeatureSet features = FeatureSet.noFeatures();
         for (FeatureSet next : purchasedFeatures) {
             features = features.and(next);

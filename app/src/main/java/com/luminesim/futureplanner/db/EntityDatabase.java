@@ -35,8 +35,7 @@ public abstract class EntityDatabase extends RoomDatabase {
                             context.getApplicationContext(),
                             EntityDatabase.class,
                             "entity_database")
-                            .addMigrations(MIGRATION_1_2)
-                            .addMigrations(MIGRATION_2_3)
+//                            .addMigrations(MIGRATION_3_4)
                             .build();
                 }
             }
@@ -81,22 +80,6 @@ public abstract class EntityDatabase extends RoomDatabase {
                             + "(1, (SELECT `uid` FROM `entities` LIMIT 1), ?, 'Saskatchewan'), "
                             + "(2, (SELECT `uid` FROM `entities` LIMIT 1), ?, '10000.00')",
                     new Object[] {CanadianIndividualIncomeSimulation.PARAMETER_PROVINCE, CanadianIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS});
-        }
-    };
-
-
-    /**
-     * Migrates versions.
-     */
-    public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
-        @Override
-        public void migrate(SupportSQLiteDatabase database) {
-
-            // Removing support for the more complex simulation for now.
-            database.execSQL("UPDATE `entities` SET `type` = ?", params(SimpleIndividualIncomeSimulation.ENTITY_TYPE));
-
-            // Remove obsolete parameters.
-            database.execSQL("DELETE FROM `entity_parameters` WHERE `name` = ?", params(CanadianIndividualIncomeSimulation.PARAMETER_PROVINCE));
         }
     };
 }

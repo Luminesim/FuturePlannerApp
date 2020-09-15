@@ -16,6 +16,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -75,7 +76,8 @@ public class FactEntryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        ChipGroup editArea = findViewById(R.id.factTextArea);
+        ChipGroup preview = findViewById(R.id.previewAmount);
+        TextView label = findViewById(R.id.labelAmount);
         mAdapter = new MonadSelectionView(
                 this,
                 mCategory,
@@ -89,27 +91,30 @@ public class FactEntryActivity extends AppCompatActivity {
                     // Update the chip's text now that its in the right spot
                     next.setText(formattedString);
 
+                    // Ensure everything is visible again.
+                    label.setVisibility(View.VISIBLE);
+                    preview.setVisibility(View.VISIBLE);
+
                     // Add the chip to the view, remembering its position
-                    editArea.addView(next);
-                    final int Index = editArea.getChildCount() - 1;
+                    preview.addView(next);
+                    final int Index = preview.getChildCount() - 1;
 
                     // Allow the chip to be edited.
                     next.setOnClickListener(view -> {
-                        for (int i = 0; i < editArea.getChildCount(); i += 1) {
-                            ((Chip)editArea.getChildAt(i)).setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.canvasColor)));
+                        for (int i = 0; i < preview.getChildCount(); i += 1) {
+                            ((Chip) preview.getChildAt(i)).setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.canvasColor)));
                         }
 
                         if (!next.isChecked()) {
                             mAdapter.cancelEdit();
-                        }
-                        else {
+                        } else {
                             next.setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.selectionColor)));
                             mAdapter.editSelection(Index, getSupportFragmentManager(), () -> {
-                                int count = editArea.getChildCount();
-                                editArea.removeViews(Index, editArea.getChildCount() - (Index));
+                                int count = preview.getChildCount();
+                                preview.removeViews(Index, preview.getChildCount() - (Index));
                                 mData = mData.subList(0, Index);
-                                for (int i = 0; i < editArea.getChildCount(); i += 1) {
-                                    ((Chip) editArea.getChildAt(i)).setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.canvasColor)));
+                                for (int i = 0; i < preview.getChildCount(); i += 1) {
+                                    ((Chip) preview.getChildAt(i)).setChipBackgroundColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.canvasColor)));
                                 }
 
                             });
@@ -232,17 +237,43 @@ public class FactEntryActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+
         // If the fact exists, enter the data into the form.
         if (mFactUid != NO_ID) {
             mEntities.getFact(mFactUid, data -> {
                 runOnUiThread(() -> ((EditText) findViewById(R.id.textFactName)).setText(data.getFact().getName()));
 
                 // Enter the details one by one.
-                runOnUiThread(() -> ((ChipGroup) findViewById(R.id.factTextArea)).removeAllViews());
+                runOnUiThread(() -> {
+                    ChipGroup preview = findViewById(R.id.previewAmount);
+                    TextView label = findViewById(R.id.labelAmount);
+                    preview.removeAllViews();
+                    preview.setVisibility(View.GONE);
+                    label.setVisibility(View.GONE);
+                });
+                if (data.getDetails() != null && data.getDetails().size() > 0) {
+                    runOnUiThread(() -> {
+                        ChipGroup preview = findViewById(R.id.previewAmount);
+                        TextView label = findViewById(R.id.labelAmount);
+                        preview.removeAllViews();
+                        preview.setVisibility(View.VISIBLE);
+                        label.setVisibility(View.VISIBLE);
+                    });
+                }
                 data.getDetails().forEach(detail -> {
                     runOnUiThread(() -> mAdapter.triggerCallbackAndUpdateMonadList(detail));
                 });
             });
+        }
+        else {
+
+
+            ChipGroup previewAmount = findViewById(R.id.previewAmount);
+            TextView labelAmount = findViewById(R.id.labelAmount);
+            if (previewAmount.getChildCount() == 0) {
+                previewAmount.setVisibility(View.GONE);
+                labelAmount.setVisibility(View.GONE);
+            }
         }
 
         // Ensure the save button is properly enabled / disabled.
@@ -295,7 +326,7 @@ public class FactEntryActivity extends AppCompatActivity {
             mEntities.updateFact(mEntityUid, fact, details, () -> {
                 // All done.
                 Intent out = new Intent();
-                ChipGroup result = findViewById(R.id.factTextArea);
+                ChipGroup result = findViewById(R.id.previewAmount);
                 String text = "";
                 for (int i = 0; i < result.getChildCount(); i += 1) {
                     text += result.getChildAt(i).toString() + " ";
@@ -314,8 +345,11 @@ public class FactEntryActivity extends AppCompatActivity {
      * Called when the user taps the clear button
      */
     public void clearSelection(@NonNull View view) {
-        ChipGroup editArea = findViewById(R.id.factTextArea);
+        ChipGroup editArea = findViewById(R.id.previewAmount);
         editArea.removeAllViews();
+        TextView label = findViewById(R.id.labelAmount);
+        editArea.setVisibility(View.GONE);
+        label.setVisibility(View.GONE);
         mData.clear();
         mAdapter.restartSelection();
         setSaveButtonState();
@@ -347,7 +381,8 @@ public class FactEntryActivity extends AppCompatActivity {
     public void showChipgroupHint(@NonNull View view) {
         new AlertDialog.Builder(this)
                 .setMessage(R.string.hint_autocomplete)
-                .setNeutralButton(R.string.button_ok, (x,y) -> {})
+                .setNeutralButton(R.string.button_ok, (x, y) -> {
+                })
                 .show();
     }
 }

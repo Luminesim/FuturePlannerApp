@@ -19,6 +19,7 @@ public class PercentInputFragment extends AlertDialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+
         toStart = getActivity().getLayoutInflater().inflate(R.layout.fragment_percent_input, null);
         return new AlertDialog.Builder(getContext())
                 .setView(toStart)

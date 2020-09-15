@@ -323,34 +323,37 @@ public class ResultChartAndButtonsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mFeatures = new FeatureManager(getContext());
-        mFeatures.listen(new FeatureManager.FeatureManagerListener() {
-            @Override
-            public void onProductListReady() {
-            }
 
-            @Override
-            public void onFeaturesUpdated() {
-                mLatestFeatures = mFeatures.getPurchasedFeatures(false);
-                if (mLatestFeatures.isAdvertisingEnabled()) {
-                    mAdView.setVisibility(View.VISIBLE);
-                } else {
-                    mAdView.setVisibility(View.GONE);
+        if (mFeatures == null) {
+            mFeatures = new FeatureManager(getContext());
+            mFeatures.listen(new FeatureManager.FeatureManagerListener() {
+                @Override
+                public void onProductListReady() {
                 }
-            }
 
-            @Override
-            public void onErrorLoadingFeatures() {
-                if (mAdView == null)
-                    return;
-                mLatestFeatures = mFeatures.getPurchasedFeatures(false);
-                if (mLatestFeatures.isAdvertisingEnabled()) {
-                    mAdView.setVisibility(View.VISIBLE);
-                } else {
-                    mAdView.setVisibility(View.GONE);
+                @Override
+                public void onFeaturesUpdated() {
+                    mLatestFeatures = mFeatures.getPurchasedFeatures(false);
+                    if (mLatestFeatures.isAdvertisingEnabled()) {
+                        mAdView.setVisibility(View.VISIBLE);
+                    } else {
+                        mAdView.setVisibility(View.GONE);
+                    }
                 }
-            }
-        });
+
+                @Override
+                public void onErrorLoadingFeatures() {
+                    if (mAdView == null)
+                        return;
+                    mLatestFeatures = mFeatures.getPurchasedFeatures(false);
+                    if (mLatestFeatures.isAdvertisingEnabled()) {
+                        mAdView.setVisibility(View.VISIBLE);
+                    } else {
+                        mAdView.setVisibility(View.GONE);
+                    }
+                }
+            });
+        }
     }
 
     @Override
