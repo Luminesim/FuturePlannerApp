@@ -15,6 +15,8 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -82,11 +84,10 @@ public class ResultChartAndButtonsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pageViewModel = ViewModelProviders.of(this).get(PageViewModel.class);
-        pageViewModel.setIndex(PAGE_INDEX);
-
-
+        pageViewModel = new ViewModelProvider(requireActivity()).get(PageViewModel.class);
     }
+
+    private Thread thread;
 
     @Override
     public void onResume() {
@@ -100,20 +101,32 @@ public class ResultChartAndButtonsFragment extends Fragment {
         mChart = getActivity().findViewById(R.id.chartArea);
 
         long entityUid = getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l);
-        if (System.currentTimeMillis() - lastAutoRunTimeMs > 100) {
-            mRepo.getEntity(entityUid, entityWithFacts -> {
-                getActivity().runOnUiThread(() -> {
-                    String initialFunds = entityWithFacts.getParameter(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS).get();
-                    mAmount.setText(initialFunds);
-                    Log.i("FUNDS", "initialFunds: " + initialFunds);
-                    mChart.setNoDataText("Tap start button");
+        Log.i("PageViewModel", "From Results.onResume, index is " + pageViewModel.getIndex());
 
-                    // Run the simulation.
-                    onStartButtonPressed(getView());
+        thread = new Thread(() -> {
+            try {
+                Thread.sleep(1);
+                getActivity().runOnUiThread(() -> {
+                    pageViewModel.getSimulationRunFlag().observe(this, run -> {
+                        if (run) {
+                            onStartButtonPressed(getView());
+                            pageViewModel.getSimulationRunFlag().setValue(false);
+                        }
+                    });
                 });
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        });
+        mRepo.getEntity(entityUid, entityWithFacts -> {
+            getActivity().runOnUiThread(() -> {
+                String initialFunds = entityWithFacts.getParameter(SimpleIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS).get();
+                mAmount.setText(initialFunds);
+                Log.i("FUNDS", "initialFunds: " + initialFunds);
+                mChart.setNoDataText("Tap start button");
+                thread.start();
             });
-            lastAutoRunTimeMs = System.currentTimeMillis();
-        }
+        });
     }
 
     public void onStartButtonPressed(View view) {
@@ -151,6 +164,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
                     break;
                 case 3:
                     if (!mLatestFeatures.isTwoYearRuntimeEnabled()) {
+//                        getActivity().runOnUiThread(() -> mRuntime.setSelection(0));
                         getActivity().runOnUiThread(() -> new AlertDialog
                                 .Builder(getActivity())
                                 .setTitle(R.string.title_error)
@@ -166,6 +180,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
                     break;
                 case 4:
                     if (!mLatestFeatures.isFiveYearRuntimeEnabled()) {
+//                        getActivity().runOnUiThread(() -> mRuntime.setSelection(0));
                         getActivity().runOnUiThread(() -> new AlertDialog
                                 .Builder(getActivity())
                                 .setTitle(R.string.title_error)
@@ -324,10 +339,16 @@ public class ResultChartAndButtonsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
+    private final int RC_FACT_LIST = 1;
+
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+
+
+        Log.i("PageViewModel", "From Results.onCreateView, index is " + pageViewModel.getIndex());
+
         View root = inflater.inflate(R.layout.fragment_result_chart_and_buttons, container, false);
         pageViewModel.getText().observe(getViewLifecycleOwner(), s -> {
 
@@ -338,7 +359,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
                 intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_income);
                 intent.putExtra(FactListActivity.LIST_SELECTION, Category.Income);
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
-                startActivity(intent);
+                startActivityForResult(intent, RC_FACT_LIST);
             });
 
             container.findViewById(R.id.buttonExpenses).setOnClickListener(view -> {
@@ -346,7 +367,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
                 intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_expenses);
                 intent.putExtra(FactListActivity.LIST_SELECTION, Category.Expenses);
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
-                startActivity(intent);
+                startActivityForResult(intent, RC_FACT_LIST);
             });
 
 
@@ -392,5 +413,13 @@ public class ResultChartAndButtonsFragment extends Fragment {
         }
 
         return root;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_FACT_LIST) {
+            pageViewModel.getSimulationRunFlag().postValue(true);
+        }
     }
 }

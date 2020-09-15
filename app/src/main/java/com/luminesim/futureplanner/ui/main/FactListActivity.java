@@ -44,6 +44,8 @@ public class FactListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mData = MonadDatabase.getDatabase(this);
 
+
+
         mCategoryTextId = getIntent().getIntExtra(LIST_TITLE, -1);
         if (mCategoryTextId == -1) {
             throw new IllegalStateException("Did not receive a title.");

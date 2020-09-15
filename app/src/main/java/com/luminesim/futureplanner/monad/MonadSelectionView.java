@@ -64,6 +64,15 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
         }
     }
 
+//    public boolean doesSelectionProduceType(@NonNull Class<?> type) {
+//        if (mSelectionThusFar == null) {
+//            return false;
+//        }
+//        else {
+//            return mSelectionThusFar.getProperties().canDuckTypeAs(type);
+//        }
+//    }
+
     /**
      * Goes back to starting monads.
      */

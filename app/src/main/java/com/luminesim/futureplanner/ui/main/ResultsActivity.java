@@ -2,12 +2,14 @@ package com.luminesim.futureplanner.ui.main;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -56,6 +58,19 @@ public class ResultsActivity extends AppCompatActivity implements CanNavigateToS
         mViewPager.setAdapter(sectionsPagerAdapter);
         TabLayout tabs = findViewById(R.id.tabs);
         tabs.setupWithViewPager(mViewPager);
+        PageViewModel model = new ViewModelProvider(this).get(PageViewModel.class);
+        tabs.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager) {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                Log.i("PageViewModel", "Tab selected" + tab.getPosition());
+                model.setIndex(tab.getPosition()+1);
+                if (tab.getPosition()+1 == ResultChartAndButtonsFragment.PAGE_INDEX) {
+                    model.getSimulationRunFlag().postValue(true);
+                }
+                super.onTabSelected(tab);
+            }
+        });
+        new ViewModelProvider(this).get(PageViewModel.class).setIndex(ResultChartAndButtonsFragment.PAGE_INDEX);
     }
 
     /**

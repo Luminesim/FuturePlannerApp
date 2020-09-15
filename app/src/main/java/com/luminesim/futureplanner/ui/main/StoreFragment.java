@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.util.Log;
@@ -77,8 +78,8 @@ public class StoreFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pageViewModel = ViewModelProviders.of(this).get(PageViewModel.class);
-        pageViewModel.setIndex(PAGE_INDEX);
+        pageViewModel = new ViewModelProvider(requireActivity()).get(PageViewModel.class);
+//        pageViewModel.setIndex(PAGE_INDEX);
     }
 
     private void showConnectionError(BillingResult billingResult) {
@@ -124,6 +125,7 @@ public class StoreFragment extends Fragment {
     public void onResume() {
         super.onResume();
         delayTime.set(1000);
+        Log.i("PageViewModel", "From Store.onResume, index is " + pageViewModel.getIndex());
     }
 
     @Override
@@ -146,7 +148,7 @@ public class StoreFragment extends Fragment {
 
             mFeatureManager = new FeatureManager(getContext());
 
-//            AtomicBoolean testFlag = new AtomicBoolean(true);
+            AtomicBoolean testFlag = new AtomicBoolean(true);
 
             Log.i("FeatureManager", "Created");
             mFeatureManager.listen(new FeatureManager.FeatureManagerListener() {
