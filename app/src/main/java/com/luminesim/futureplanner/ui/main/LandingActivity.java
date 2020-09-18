@@ -55,6 +55,8 @@ public class LandingActivity extends AppCompatActivity {
         // Create the first entity, if needed, then launch the main app.
         mEntities.getEntities().observe(this, data -> {
 
+            mEntities.printAll();
+
             // No entity? Create it.
             if (data.isEmpty()) {
                 Log.i("Setup", "No entities. Adding a user.");

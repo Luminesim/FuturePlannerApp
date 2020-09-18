@@ -138,4 +138,8 @@ public class EntityRepository {
             mEntityDao.insert(param);
         });
     }
+
+    public void printAll() {
+        submit(() -> mEntityDao.printAll());
+    }
 }

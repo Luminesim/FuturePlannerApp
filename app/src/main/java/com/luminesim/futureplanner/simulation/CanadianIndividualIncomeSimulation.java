@@ -4,9 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.luminesim.futureplanner.db.EntityWithFacts;
-import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
-import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
 
 import java.time.LocalDate;

@@ -49,29 +49,14 @@ public class MonadSelectionView extends RecyclerView.Adapter<MonadSelectionView.
     private Runnable mOnEdit = () -> {
     };
 
-//    public interface OnEditListener {
-//        public void onEdit(String monadId, int position, Object[] newParameters);
-//    }
-
-    /**
-     * @return The output type of the current selection.
-     */
-    public Optional<Class<?>> getCurrentSelectionOutputType() {
+    public boolean doesSelectionProduceType(@NonNull Class<?> type) {
         if (mSelectionThusFar == null) {
-            return Optional.empty();
-        } else {
-            return mSelectionThusFar.getOutType();
+            return false;
+        }
+        else {
+            return mSelectionThusFar.getProperties().canDuckTypeAs(type);
         }
     }
-
-//    public boolean doesSelectionProduceType(@NonNull Class<?> type) {
-//        if (mSelectionThusFar == null) {
-//            return false;
-//        }
-//        else {
-//            return mSelectionThusFar.getProperties().canDuckTypeAs(type);
-//        }
-//    }
 
     /**
      * Goes back to starting monads.

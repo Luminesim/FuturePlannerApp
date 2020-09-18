@@ -13,19 +13,11 @@ import com.luminesim.futureplanner.input.CalendarInputFragment;
 import com.luminesim.futureplanner.input.NumericAmountInputFragment;
 import com.luminesim.futureplanner.input.PercentInputFragment;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
-import com.luminesim.futureplanner.monad.types.IncomeType;
-import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 import com.luminesim.futureplanner.monad.types.OnDateMonad;
 import com.luminesim.futureplanner.monad.types.PercentAdditionMonad;
-import com.luminesim.futureplanner.monad.types.PercentAdditionMonadRateToRate;
 import com.luminesim.futureplanner.monad.types.PercentDeductionMonad;
-import com.luminesim.futureplanner.monad.types.PercentDeductionMonadRateToRate;
-
-import org.json.JSONArray;
 
 import java.io.IOException;
-import java.nio.file.StandardOpenOption;
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +28,6 @@ import java.util.Collections;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -325,20 +316,20 @@ public final class MonadDatabase {
                                 return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
                             }
                     );
-                    INSTANCE.add(
-                            // TODO FIXME: Got the key wrong, needs to be updated in DB...
-                            "IdPercentRateToRate",
-                            new PercentDeductionMonadRateToRate("Percent"),
-                            Arrays.asList(Category.values()),
-                            "minus %s%%",
-                            context.getString(R.string.moand_percent_deduction),
-                            context.getString(R.string.hint_percent_deduction),
-                            Optional.of(() -> new PercentInputFragment()),
-                            (template, inputs) -> {
-                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
-                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
-                            }
-                    );
+//                    INSTANCE.add(
+//                            // TODO FIXME: Got the key wrong, needs to be updated in DB...
+//                            "IdPercentRateToRate",
+//                            new PercentDeductionMonadRateToRate("Percent"),
+//                            Arrays.asList(Category.values()),
+//                            "minus %s%%",
+//                            context.getString(R.string.moand_percent_deduction),
+//                            context.getString(R.string.hint_percent_deduction),
+//                            Optional.of(() -> new PercentInputFragment()),
+//                            (template, inputs) -> {
+//                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
+//                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
+//                            }
+//                    );
                     INSTANCE.add(
                             "IdPercentAddition",
                             new PercentAdditionMonad("Percent"),
@@ -352,19 +343,19 @@ public final class MonadDatabase {
                                 return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
                             }
                     );
-                    INSTANCE.add(
-                            "IdPercentAdditionRateToRate",
-                            new PercentAdditionMonadRateToRate("Percent"),
-                            Arrays.asList(Category.values()),
-                            "plus %s%%",
-                            context.getString(R.string.moand_percent_addition),
-                            context.getString(R.string.hint_percent_addition),
-                            Optional.of(() -> new PercentInputFragment()),
-                            (template, inputs) -> {
-                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
-                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
-                            }
-                    );
+//                    INSTANCE.add(
+//                            "IdPercentAdditionRateToRate",
+//                            new PercentAdditionMonadRateToRate("Percent"),
+//                            Arrays.asList(Category.values()),
+//                            "plus %s%%",
+//                            context.getString(R.string.moand_percent_addition),
+//                            context.getString(R.string.hint_percent_addition),
+//                            Optional.of(() -> new PercentInputFragment()),
+//                            (template, inputs) -> {
+//                                String input = ((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString();
+//                                return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
+//                            }
+//                    );
                     INSTANCE.add("IdPerYear",
                             new ToRateMonad(1 / 365.0), Arrays.asList(Category.values()),
                             context.getString(R.string.monad_per_year_view_text),

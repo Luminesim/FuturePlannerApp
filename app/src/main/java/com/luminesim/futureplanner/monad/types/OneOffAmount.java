@@ -3,10 +3,12 @@ package com.luminesim.futureplanner.monad.types;
 import java.time.LocalDateTime;
 import java.util.function.DoubleSupplier;
 
+import ca.anthrodynamics.indes.lang.HasTimeAssignment;
+
 /**
  * An amount that should be processed exactly once.
  */
-public interface OneOffAmount {
+public interface OneOffAmount extends HasTimeAssignment {
     /**
      * @return
      *  The amount to use, calculated at the moment it is to be processed.

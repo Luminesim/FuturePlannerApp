@@ -35,7 +35,10 @@ public class EntityFact {
 
     @ColumnInfo(name="entity_uid")
     @NonNull
-    private long entityUid;
+    private Long entityUid;
+
+//    @ColumnInfo(name="parent_entity_detail_uid")
+//    private Long parentDetailUid;
 
     /**
      * The use of this knowledge, e.g. for income calculation

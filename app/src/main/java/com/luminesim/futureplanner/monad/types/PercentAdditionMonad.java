@@ -3,12 +3,14 @@ package com.luminesim.futureplanner.monad.types;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 
 import ca.anthrodynamics.indes.lang.Monad;
 import ca.anthrodynamics.indes.lang.MonadInformation;
+import ca.anthrodynamics.indes.lang.Traits;
 import lombok.NonNull;
 
-public class PercentAdditionMonad extends Monad<Number, Number> {
+public class PercentAdditionMonad extends Monad<DoubleSupplier, DoubleSupplier> {
 
     public PercentAdditionMonad(@NonNull String additionParamName) {
         super(
@@ -18,9 +20,8 @@ public class PercentAdditionMonad extends Monad<Number, Number> {
                 new String[]{additionParamName});
     }
 
-    private static MonadInformation<Number, Number> getDefaultInfo() {
-        Map<String, Object> properties = new HashMap<>();
-        MonadInformation info = new MonadInformation(properties, Optional.of(Number.class), Optional.of(Number.class));
+    private static MonadInformation<DoubleSupplier, DoubleSupplier> getDefaultInfo() {
+        MonadInformation info = new MonadInformation(Traits.infoOnly(DoubleSupplier.class), Optional.of(DoubleSupplier.class), Optional.of(DoubleSupplier.class));
         return info;
     }
 
@@ -31,8 +32,7 @@ public class PercentAdditionMonad extends Monad<Number, Number> {
      * @return
      */
     @Override
-    protected Double apply(Number in, Object[] params) {
-        // Assign the money value.
-        return in.doubleValue() * (1 + (Double) params[0]/100.0);
+    protected Traits apply(Traits in, Object[] params) {
+        return in.andThen((DoubleSupplier)() -> in.as(DoubleSupplier.class).getAsDouble() * (1 + (Double) params[0]/100.0));
     }
 }

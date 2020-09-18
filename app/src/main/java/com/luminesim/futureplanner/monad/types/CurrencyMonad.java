@@ -7,9 +7,10 @@ import java.util.Optional;
 
 import ca.anthrodynamics.indes.lang.Monad;
 import ca.anthrodynamics.indes.lang.MonadInformation;
+import ca.anthrodynamics.indes.lang.Traits;
 import lombok.NonNull;
 
-public class CurrencyMonad extends Monad<Monad.None, Number> {
+public class CurrencyMonad extends Monad<Monad.None, MonetaryAmount> {
 
     public static String INFO_CURRENCY_CODE = "com.luminesim.futureplanner.INFO_CURRENCY_CODE";
 
@@ -21,10 +22,8 @@ public class CurrencyMonad extends Monad<Monad.None, Number> {
                 new String[]{currency.getCurrencyCode()});
     }
 
-    private static MonadInformation<None, Number> getDefaultInfo(Currency currency) {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(INFO_CURRENCY_CODE, currency.getCurrencyCode());
-        MonadInformation info = new MonadInformation(properties, Optional.of(None.class), Optional.of(Number.class));
+    private static MonadInformation<None, MonetaryAmount> getDefaultInfo(Currency currency) {
+        MonadInformation info = new MonadInformation(Traits.infoOnly(MonetaryAmount.class), Optional.of(None.class), Optional.of(MonetaryAmount.class));
         return info;
     }
 
@@ -35,8 +34,18 @@ public class CurrencyMonad extends Monad<Monad.None, Number> {
      * @return
      */
     @Override
-    protected Double apply(Monad.None in, Object[] params) {
+    protected Traits apply(Traits in, Object[] params) {
         // Assign the money value.
-        return (Double) params[0];
+        return Traits.from(new MonetaryAmount() {
+            @Override
+            public Currency getCurrency() {
+                return Currency.getInstance((String)getParameterValues()[0]);
+            }
+
+            @Override
+            public double getAsDouble() {
+                return (Double) params[0];
+            }
+        });
     }
 }

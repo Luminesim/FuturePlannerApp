@@ -36,10 +36,6 @@ public class EntityFactDetail {
     @ColumnInfo(name="entity_fact_uid")
     @NonNull
     private long entityFactUid;
-//
-//    xxx
-//    private Long parentDetailUid;
-//    private Integer childNumber;
 
     /**
      * Used to ensure fact details are presented in the right order (for

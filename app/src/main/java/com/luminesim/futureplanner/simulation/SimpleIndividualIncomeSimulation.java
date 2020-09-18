@@ -66,7 +66,7 @@ public class SimpleIndividualIncomeSimulation extends EntityWithFundsSimulation 
 
         // Add one-off events.
         oneOffIncome.forEach(incomeEvent -> {
-            OneOffAmount amount = (OneOffAmount) incomeEvent.apply(Monad.NoInput);
+            OneOffAmount amount = incomeEvent.apply(Monad.NoInput).as(OneOffAmount.class);
             double when = (double) startTime.until(amount.getTime(), ChronoUnit.DAYS);
             if (when >= 0) {
                 root.addEvent(when, e -> sd.updateStock(Funds, old ->  old + amount.getAmount().getAsDouble()));
@@ -75,7 +75,7 @@ public class SimpleIndividualIncomeSimulation extends EntityWithFundsSimulation 
 
         // One-off expenses.
         oneOffExpenses.forEach(expenseEvent -> {
-            OneOffAmount amount = (OneOffAmount) expenseEvent.apply(Monad.NoInput);
+            OneOffAmount amount = expenseEvent.apply(Monad.NoInput).as(OneOffAmount.class);
             double when = (double) startTime.until(amount.getTime(), ChronoUnit.DAYS);
             if (when >= 0) {
                 root.addEvent(when, e -> sd.updateStock(Funds, old -> old - amount.getAmount().getAsDouble()));

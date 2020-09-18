@@ -94,4 +94,34 @@ public interface EntityDao {
     default void deleteEntities() {
         getEntitiesNow().forEach(e -> delete(e.getEntity()));
     }
+
+    default void printAll() {
+        System.out.println("=== ENTITIES ===");
+        System.out.println("uid\tname\ttype");
+        if (getEntitiesNow() != null) {
+            getEntitiesNow().forEach(e -> System.out.println(String.format(
+                    "%s\t%s\t%s", e.getEntity().getUid(), e.getEntity().getName(), e.getEntity().getType()
+            )));
+
+            System.out.println("=== FACT DETAILS ===");
+            System.out.println("entity name\tfact uid\tfact name\tdetail uid\tjson");
+            getEntitiesNow().forEach(e -> {
+                if (e.getFacts() != null) {
+                    e.getFacts().forEach(f ->
+                            f.getDetails().forEach(d ->
+                                    System.out.println(String.format(
+                                            "%s\t%s\t%s\t%s\t%s",
+                                            e.getEntity().getName(),
+                                            f.getFact().getUid(),
+                                            f.getFact().getName(),
+                                            d.getUid(),
+                                            d.getMonadJson()
+                                    ))
+                            )
+                    );
+                }
+            });
+        }
+
+    }
 }

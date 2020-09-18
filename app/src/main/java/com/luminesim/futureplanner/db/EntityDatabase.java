@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@androidx.room.Database(entities = {EntityFact.class, Entity.class, EntityFactDetail.class, EntityParameter.class}, version = 3)
+@androidx.room.Database(entities = {EntityFact.class, Entity.class, EntityFactDetail.class, EntityParameter.class}, version = 4)
 @TypeConverters(Converters.class)
 public abstract class EntityDatabase extends RoomDatabase {
     public abstract EntityDao entityDao();
@@ -35,7 +35,7 @@ public abstract class EntityDatabase extends RoomDatabase {
                             context.getApplicationContext(),
                             EntityDatabase.class,
                             "entity_database")
-//                            .addMigrations(MIGRATION_3_4)
+                            .addMigrations(MIGRATION_3_4)
                             .build();
                 }
             }
@@ -52,34 +52,14 @@ public abstract class EntityDatabase extends RoomDatabase {
         return params;
     }
 
-
-    /**
-     * Migrates first to second version.
-     */
-    public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+    public static final Migration MIGRATION_3_4 = new Migration(3,4) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
 
-            // Entities now have types.
-            database.execSQL("ALTER TABLE `entities` ADD COLUMN `type` TEXT DEFAULT '"+CanadianIndividualIncomeSimulation.ENTITY_TYPE+"' NOT NULL");
-            database.execSQL("UPDATE `entities` SET `type` = ?", params(CanadianIndividualIncomeSimulation.ENTITY_TYPE));
+            // Nuked 2 monads
+            database.execSQL("UPDATE `entity_fact_details` SET `monad_json` = REPLACE(`monad_json`,'IdPercentRateToRate','IdPercentDeduction')");
+            database.execSQL("UPDATE `entity_fact_details` SET `monad_json` = REPLACE(`monad_json`,'IdPercentAdditionRateToRate','IdPercentAddition')");
 
-            // Entities now have parameters.
-            database.execSQL(
-                    "CREATE TABLE `entity_parameters` ("
-                            + "`uid` INTEGER, "
-                            + "`entity_uid` LONG, "
-                            + "`name` TEXT, "
-                            + "`value` TEXT, "
-                            + "PRIMARY KEY (`uid`))"
-            );
-
-            // Existing entities have default parameters.
-            database.execSQL(
-                    "INSERT INTO `entity_parameters` (uid, entity_uid, name, value) VALUES "
-                            + "(1, (SELECT `uid` FROM `entities` LIMIT 1), ?, 'Saskatchewan'), "
-                            + "(2, (SELECT `uid` FROM `entities` LIMIT 1), ?, '10000.00')",
-                    new Object[] {CanadianIndividualIncomeSimulation.PARAMETER_PROVINCE, CanadianIndividualIncomeSimulation.PARAMETER_INITIAL_FUNDS});
         }
     };
 }

@@ -1,7 +1,6 @@
 package com.luminesim.futureplanner.simulation;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -9,21 +8,15 @@ import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.monad.MonadDatabase;
-import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.IncomeType;
-import com.luminesim.futureplanner.monad.types.IncomeTypeMonad;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Currency;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -33,11 +26,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import ca.anthrodynamics.indes.Engine;
 import ca.anthrodynamics.indes.abm.Agent;
 import ca.anthrodynamics.indes.lang.ComputableMonad;
-import ca.anthrodynamics.indes.lang.Monad;
+import ca.anthrodynamics.indes.lang.HasEnd;
+import ca.anthrodynamics.indes.lang.HasStart;
 import ca.anthrodynamics.indes.lang.Rate;
-import ca.anthrodynamics.indes.lang.ScheduledRate;
-import ca.anthrodynamics.indes.sd.SDDiagram;
-import lombok.AccessLevel;
+import ca.anthrodynamics.indes.lang.Traits;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -133,7 +125,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
                 }
 
                 // Record in the appropriate collection.
-                if (Rate.class.isAssignableFrom((Class) action.getOutType().get())) {
+                if (action.getInfo().getProperties().canDuckTypeAs(Rate.class)) {
                     switch (fact.getFact().getCategory()) {
                         case Income:
                             ongoingIncome.add(action);
@@ -144,7 +136,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
                         default:
                             throw new Error("Unhandled fact category: " + fact.getFact().getCategory());
                     }
-                } else if (OneOffAmount.class.isAssignableFrom((Class) action.getOutType().get())) {
+                } else if (action.getInfo().getProperties().canDuckTypeAs(OneOffAmount.class)) {
                     switch (fact.getFact().getCategory()) {
                         case Income:
                             oneOffIncome.add(action);
@@ -214,13 +206,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
      * @return The type of income provided by the income.
      */
     protected IncomeType getIncomeType(ComputableMonad income) {
-        // Set up default income types.
-        Map<Currency, IncomeType> unspecifiedTypes = new HashMap<>();
-        unspecifiedTypes.put(Currency.getInstance("CAD"), IncomeType.CADOtherIncome);
-
-        // Return the appropriate income type.
-        Currency incomeCurrency = Currency.getInstance((String) income.getInfo().getProperties().get(CurrencyMonad.INFO_CURRENCY_CODE));
-        return (IncomeType) income.getInfo().getProperties().getOrDefault(IncomeTypeMonad.INFO_INCOME_TYPE, unspecifiedTypes.get(incomeCurrency));
+        return IncomeType.CADOtherIncome;
     }
 
     /**
@@ -235,18 +221,18 @@ public abstract class EntityWithFundsSimulation implements Runnable {
 
         double sum = 0;
         for (ComputableMonad flow : subFlows) {
-            Rate rate = ((Rate) flow.apply(ComputableMonad.NoInput));
+            Traits result = flow.apply(ComputableMonad.NoInput);
+            Rate rate = result.as(Rate.class);
             boolean isAtOrAfterStart = true;
             boolean isAtOrBeforeEnd = true;
-            if (rate instanceof ScheduledRate) {
-                ScheduledRate scheduledRate = (ScheduledRate) rate;
+            if (result.canDuckTypeAs(HasStart.class) || result.canDuckTypeAs(HasEnd.class)) {
                 LocalDate simulationTime = startTime.plusDays((long) engine.time()).toLocalDate();
-                if (scheduledRate.getStart().isPresent()) {
+                if (result.canDuckTypeAs(HasStart.class)) {
                     // REQUIRES EVEN DT
-                    isAtOrAfterStart = !simulationTime.isBefore(scheduledRate.getStart().get());
+                    isAtOrAfterStart = !simulationTime.isBefore(result.as(HasStart.class).getStart());
                 }
-                if (scheduledRate.getEnd().isPresent()) {
-                    isAtOrBeforeEnd = !simulationTime.isAfter(scheduledRate.getEnd().get());
+                if (result.canDuckTypeAs(HasEnd.class)) {
+                    isAtOrBeforeEnd = !simulationTime.isAfter(result.as(HasEnd.class).getEnd());
                 }
             }
             if (isAtOrAfterStart && isAtOrBeforeEnd) {

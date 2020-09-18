@@ -4,12 +4,14 @@ import java.util.Currency;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 
 import ca.anthrodynamics.indes.lang.Monad;
 import ca.anthrodynamics.indes.lang.MonadInformation;
+import ca.anthrodynamics.indes.lang.Traits;
 import lombok.NonNull;
 
-public class PercentDeductionMonad extends Monad<Number, Number> {
+public class PercentDeductionMonad extends Monad<DoubleSupplier, DoubleSupplier> {
 
     public PercentDeductionMonad(@NonNull String deductionParamName) {
         super(
@@ -21,9 +23,8 @@ public class PercentDeductionMonad extends Monad<Number, Number> {
         setParameterPrecondition(0, "percent must be in range 0-100", value -> 0 <= (double)value && (double)value <= 100);
     }
 
-    private static MonadInformation<Number, Number> getDefaultInfo() {
-        Map<String, Object> properties = new HashMap<>();
-        MonadInformation info = new MonadInformation(properties, Optional.of(Number.class), Optional.of(Number.class));
+    private static MonadInformation<DoubleSupplier, DoubleSupplier> getDefaultInfo() {
+        MonadInformation info = new MonadInformation(Traits.infoOnly(DoubleSupplier.class), Optional.of(DoubleSupplier.class), Optional.of(DoubleSupplier.class));
         return info;
     }
 
@@ -34,9 +35,7 @@ public class PercentDeductionMonad extends Monad<Number, Number> {
      * @return
      */
     @Override
-    protected Double apply(Number in, Object[] params) {
-
-        // Assign the money value.
-        return in.doubleValue() * (1 - (Double) params[0]/100.0);
+    protected Traits apply(Traits in, Object[] params) {
+        return in.andThen((DoubleSupplier)() -> in.as(DoubleSupplier.class).getAsDouble() * (1 - (Double) params[0]/100.0));
     }
 }

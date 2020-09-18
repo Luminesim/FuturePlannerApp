@@ -207,15 +207,13 @@ public class FactEntryActivity extends AppCompatActivity {
     private void setSaveButtonState(Editable name) {
 
         // There needs to be a non-whitespace name.
-        boolean isEnabled = (name.toString().trim().length() > 0 && !name.toString().trim().equals(""))
-                // And the selection must provide an output type.
-                && mAdapter.getCurrentSelectionOutputType().isPresent();
+        boolean isEnabled = (name.toString().trim().length() > 0 && !name.toString().trim().equals(""));
 
         // If this is income or expenses, there can only be two types of numbers coming out: rates or one-off events.
         if (isEnabled) {
             if (mCategory == Category.Income || mCategory == Category.Expenses) {
-                Class<?> outType = mAdapter.getCurrentSelectionOutputType().get();
-                isEnabled &= Rate.class.isAssignableFrom(outType) || OneOffAmount.class.isAssignableFrom(outType);
+                isEnabled &= (mAdapter.doesSelectionProduceType(Rate.class)
+                        || mAdapter.doesSelectionProduceType(OneOffAmount.class));
             } else {
                 throw new Error("Unhandled fact category: " + mCategory);
             }
