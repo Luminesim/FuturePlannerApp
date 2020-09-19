@@ -148,7 +148,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
                             throw new Error("Unhandled fact category: " + fact.getFact().getCategory());
                     }
                 } else {
-                    throw new Error("Unhandled income/expense type: " + action.getOutType().get());
+                    throw new Error("Unhandled income/expense type: " + action.getInfo().getProperties());
                 }
             });
 
