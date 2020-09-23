@@ -170,17 +170,19 @@ public class SimulationTest {
         // Person parameters.
         addIncome("Income")
                 .amount(100_000.00) // 100k
-                .preRatePlus(50.0) // 150k
-                .preRateMinus(50.0) // 75k
+                .plus(50.0) // 150k
+                .minus(50.0) // 75k
                 .perYear()
-                .postRateMinus(33.00) // 50k
-                .postRateMinus(50.0) // 25k
-                .postRatePlus(50) // 37.5k
-                .starting(nDays(365/2)); // 18.75k
+                .minus(33.00) // 50k
+                .minus(50.0) // 25k
+                .plus(50) // 37.5k
+                .starting(nDays(365/2)) // 18.75k
+                .plus(25) // 23.4375K
+                .minus(50); // 11.71875k
         runForOneYear();
 
         // Ensure income correctly calculated.
-        assertEquals("Funds incorrect", 18_750.00, getFunds(), Tol);
+        assertEquals("Funds incorrect", 11_718.75, getFunds(), Tol);
     }
 
     @Test
@@ -188,14 +190,15 @@ public class SimulationTest {
         // Person parameters.
         addIncome("Income")
                 .amount(100_000.00) // 100k
-                .preRatePlus(50.0) // 150k
-                .preRateMinus(50.0) // 75k
-                .preRateMinus(33.0) // 50K
-                .once(nDays(123));
+                .plus(50.0) // 150k
+                .minus(50.0) // 75k
+                .once(nDays(123))
+                .minus(33.0) // 50K
+                .plus(50);// 75k
         runForOneYear();
 
         // Ensure income correctly calculated.
-        assertEquals("Funds incorrect", 50_000.00, getFunds(), Tol);
+        assertEquals("Funds incorrect", 75_000.00, getFunds(), Tol);
     }
 
     private LocalDateTime nDays(int n) {
@@ -269,23 +272,13 @@ public class SimulationTest {
             return this;
         }
 
-        public FactBuilder preRateMinus(double percent) {
+        public FactBuilder minus(double percent) {
             dao.insert(detail(new MonadData("IdPercentDeduction", percent)));
             return this;
         }
 
-        public FactBuilder postRateMinus(double percent) {
-            dao.insert(detail(new MonadData("IdPercentRateToRate", percent)));
-            return this;
-        }
-
-        public FactBuilder preRatePlus(double percent) {
+        public FactBuilder plus(double percent) {
             dao.insert(detail(new MonadData("IdPercentAddition", percent)));
-            return this;
-        }
-
-        public FactBuilder postRatePlus(double percent) {
-            dao.insert(detail(new MonadData("IdPercentAdditionRateToRate", percent)));
             return this;
         }
     }

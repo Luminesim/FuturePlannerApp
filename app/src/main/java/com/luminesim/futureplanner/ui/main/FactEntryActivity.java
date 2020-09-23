@@ -28,6 +28,7 @@ import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityFactWithDetails;
 import com.luminesim.futureplanner.db.EntityRepository;
+import com.luminesim.futureplanner.models.Model;
 import com.luminesim.futureplanner.monad.MonadData;
 import com.luminesim.futureplanner.monad.MonadSelectionView;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
@@ -35,8 +36,10 @@ import com.luminesim.futureplanner.purchases.FeatureManager;
 import com.luminesim.futureplanner.purchases.FeatureSet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import ca.anthrodynamics.indes.lang.Rate;
 
@@ -44,6 +47,7 @@ public class FactEntryActivity extends AppCompatActivity {
     public static final String EXTRA_NAME = "com.exmaple.myfirstapp.NAME";
     public static final String EXTRA_FORMATTED_TEXT = "com.exmaple.myfirstapp.FORMATTED_TEXT";
     public static final String EXTRA_DATA_CATEGORY = "com.extra.myfirstapp.EXTRA_DATA_CATEGORY";
+    public static final String EXTRA_MODEL_CLASS = "com.extra.myfirstapp.EXTRA_MODEL_CLASS";
     private static final long NO_ID = 0l;
     public static final int RESULT_OK_FACT_DELETED = 100;
 
@@ -56,6 +60,7 @@ public class FactEntryActivity extends AppCompatActivity {
     private long mFactUid;
     private Category mCategory;
     private FeatureManager mFeatures;
+    private List<Class<?>> mTargetClasses = Arrays.asList(Rate.class, OneOffAmount.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,6 +203,17 @@ public class FactEntryActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // If we're not building income/expenses, set target fact type
+        if (mCategory != Category.Income && mCategory != Category.Expenses) {
+            try {
+                mTargetClasses.clear();
+                mTargetClasses.add(Class.forName(getIntent().getStringExtra(EXTRA_MODEL_CLASS)));
+            }
+            catch (Throwable t) {
+                throw new Error(t);
+            }
+        }
     }
 
     /**
@@ -209,14 +225,9 @@ public class FactEntryActivity extends AppCompatActivity {
         // There needs to be a non-whitespace name.
         boolean isEnabled = (name.toString().trim().length() > 0 && !name.toString().trim().equals(""));
 
-        // If this is income or expenses, there can only be two types of numbers coming out: rates or one-off events.
+        // Are we producing the target type?
         if (isEnabled) {
-            if (mCategory == Category.Income || mCategory == Category.Expenses) {
-                isEnabled &= (mAdapter.doesSelectionProduceType(Rate.class)
-                        || mAdapter.doesSelectionProduceType(OneOffAmount.class));
-            } else {
-                throw new Error("Unhandled fact category: " + mCategory);
-            }
+            isEnabled &= mTargetClasses.stream().anyMatch(mAdapter::doesSelectionProduceType);
         }
 
         // Toggle enabled based on the above criteria.
@@ -262,8 +273,7 @@ public class FactEntryActivity extends AppCompatActivity {
                     runOnUiThread(() -> mAdapter.triggerCallbackAndUpdateMonadList(detail));
                 });
             });
-        }
-        else {
+        } else {
 
 
             ChipGroup previewAmount = findViewById(R.id.previewAmount);
@@ -321,7 +331,7 @@ public class FactEntryActivity extends AppCompatActivity {
             }
 
             // Submit the update.
-            mEntities.updateFact(mEntityUid, fact, details, () -> {
+            mEntities.updateFact(mEntityUid, fact, details, factUid -> {
                 // All done.
                 Intent out = new Intent();
                 ChipGroup result = findViewById(R.id.previewAmount);

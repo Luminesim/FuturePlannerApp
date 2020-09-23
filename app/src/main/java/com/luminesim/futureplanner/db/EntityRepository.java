@@ -77,7 +77,7 @@ public class EntityRepository {
      * Details will be given the fact's ID, if updated.
      * @pre Entity must exist.
      */
-    public void updateFact(long entityUid, @NonNull EntityFact fact, @NonNull List<EntityFactDetail> details, Runnable onSaved) {
+    public void updateFact(long entityUid, @NonNull EntityFact fact, @NonNull List<EntityFactDetail> details, Consumer<Long> onSaved) {
 
         submit(() -> {
             // Get the entity. Ensure it exists.
@@ -98,7 +98,7 @@ public class EntityRepository {
             details.forEach(mEntityDao::insert);
 
             // Callback.
-            onSaved.run();
+            onSaved.accept(factUid);
         });
     }
 

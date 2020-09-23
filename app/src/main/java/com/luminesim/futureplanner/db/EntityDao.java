@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -100,15 +101,18 @@ public interface EntityDao {
         System.out.println("uid\tname\ttype");
         if (getEntitiesNow() != null) {
             getEntitiesNow().forEach(e -> System.out.println(String.format(
-                    "%s\t%s\t%s", e.getEntity().getUid(), e.getEntity().getName(), e.getEntity().getType()
+                    "%s\t%s\t%s",
+                    e.getEntity().getUid(),
+                    e.getEntity().getName(),
+                    e.getEntity().getType()
             )));
 
             System.out.println("=== FACT DETAILS ===");
             System.out.println("entity name\tfact uid\tfact name\tdetail uid\tjson");
             getEntitiesNow().forEach(e -> {
                 if (e.getFacts() != null) {
-                    e.getFacts().forEach(f ->
-                            f.getDetails().forEach(d ->
+                    e.getFacts().stream().sorted(Comparator.comparingLong(f -> f.getFact().getUid())).forEach(f ->
+                            f.getDetails().stream().sorted(Comparator.comparingDouble(EntityFactDetail::getStepNumber)).forEach(d ->
                                     System.out.println(String.format(
                                             "%s\t%s\t%s\t%s\t%s",
                                             e.getEntity().getName(),

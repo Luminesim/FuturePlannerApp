@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.db.EntityWithFacts;
+import com.luminesim.futureplanner.models.Model;
+import com.luminesim.futureplanner.models.ModelView;
 import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
@@ -33,7 +35,7 @@ import ca.anthrodynamics.indes.lang.Traits;
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class EntityWithFundsSimulation implements Runnable {
+public abstract class EntityWithFundsSimulation implements Runnable, ModelView {
     @Getter
     private TreeMap<LocalDate, Double> fundsDataset = new TreeMap<>();
 
@@ -92,6 +94,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
             List<ComputableMonad> oneOffIncome = new ArrayList<>();
             List<ComputableMonad> ongoingExpenses = new ArrayList<>();
             List<ComputableMonad> oneOffExpenses = new ArrayList<>();
+            List<Model> submodels = new ArrayList<>();
             entity.getFacts().forEach(fact -> {
                 // Accumulate the steps in an action / calculation.
                 ArrayList<ComputableMonad> actions = new ArrayList<>(fact.getDetails().size());
@@ -147,11 +150,15 @@ public abstract class EntityWithFundsSimulation implements Runnable {
                         default:
                             throw new Error("Unhandled fact category: " + fact.getFact().getCategory());
                     }
+                } else if (action.getInfo().getProperties().canDuckTypeAs(Model.class)) {
+                    submodels.add(action.apply(ComputableMonad.NoInput).as(Model.class));
                 } else {
                     throw new Error("Unhandled income/expense type: " + action.getInfo().getProperties());
                 }
             });
 
+            // Give each model access to the global view.
+            submodels.forEach(model -> model.setRootModel(this));
 
             // Build the simulation.
             // NOTE: DT MUST BE EVEN -- SEE BELOW.
@@ -160,7 +167,7 @@ public abstract class EntityWithFundsSimulation implements Runnable {
             double endTime = numberOfDaysToRun * DAY;
 
             // Construct the simulation.
-            constructSimulation(entity, root, startTime, ongoingIncome, oneOffIncome, ongoingExpenses, oneOffExpenses);
+            constructSimulation(entity, root, startTime, submodels, ongoingIncome, oneOffIncome, ongoingExpenses, oneOffExpenses);
 
             // Run the simulation.
             engine.start();
@@ -198,8 +205,9 @@ public abstract class EntityWithFundsSimulation implements Runnable {
      * Constructs the root agent of the simulation.
      *
      * @param root
+     * @param submodels
      */
-    protected abstract void constructSimulation(@NonNull EntityWithFacts entity, @NonNull Agent root, @lombok.NonNull LocalDateTime startTime, @NonNull List<ComputableMonad> ongoingIncome, @NonNull List<ComputableMonad> oneOffIncome, @NonNull List<ComputableMonad> ongoingExpenses, @NonNull List<ComputableMonad> oneOffExpenses);
+    protected abstract void constructSimulation(@NonNull EntityWithFacts entity, @NonNull Agent root, @lombok.NonNull LocalDateTime startTime, @NonNull List<Model> submodels, @NonNull List<ComputableMonad> ongoingIncome, @NonNull List<ComputableMonad> oneOffIncome, @NonNull List<ComputableMonad> ongoingExpenses, @NonNull List<ComputableMonad> oneOffExpenses);
 
     /**
      * @param income

@@ -66,5 +66,5 @@ public class MigrationTest {
     }
 
     // Array of all migrations
-    private static final Migration[] ALL_MIGRATIONS = new Migration[]{EntityDatabase.MIGRATION_1_2, EntityDatabase.MIGRATION_2_3};
+    private static final Migration[] ALL_MIGRATIONS = new Migration[]{EntityDatabase.MIGRATION_3_4};
 }

@@ -2,19 +2,12 @@ package com.luminesim.futureplanner.db;
 
 import android.content.Context;
 
-import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.PrimaryKey;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.luminesim.futureplanner.simulation.CanadianIndividualIncomeSimulation;
-import com.luminesim.futureplanner.simulation.SimpleIndividualIncomeSimulation;
-
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
