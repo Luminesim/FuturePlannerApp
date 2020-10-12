@@ -24,13 +24,7 @@ public interface Model extends ModelView {
      * 2 to 200, then requesting information from the Model on customers should report that
      * there are 200.
      */
-    Collection<Agent> asAgents(@NonNull Engine engine, double sdDiagramDt);
-
-    /**
-     * @param root
-     * Sets the root model, allowing for whole-of-simulation queries.
-     */
-    void setRootModel(@NonNull ModelView root);
+    Collection<Agent> asAgents(@NonNull Engine engine, double dayLength, double sdDiagramDt);
 
     /**
      *
@@ -61,21 +55,9 @@ public interface Model extends ModelView {
             }
 
             @Override
-            public Collection<Agent> asAgents(@NonNull Engine engine, double sdDiagramDt) {
-                return models.stream().map(m -> m.asAgents(engine, sdDiagramDt)).flatMap(Collection::stream).collect(Collectors.toList());
+            public Collection<Agent> asAgents(@NonNull Engine engine, double dayLength, double sdDiagramDt) {
+                return models.stream().map(m -> m.asAgents(engine, dayLength, sdDiagramDt)).flatMap(Collection::stream).collect(Collectors.toList());
             }
-
-            @Override
-            public void setRootModel(@NonNull ModelView root) {
-                models.forEach(m -> m.setRootModel(root));
-            }
-
-            @Override
-            public ModelView getRootModel() {
-                return models.stream().map(Model::getRootModel).findFirst().get();
-            }
-
-
         };
     }
 }

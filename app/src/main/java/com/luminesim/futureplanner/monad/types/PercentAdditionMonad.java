@@ -13,16 +13,7 @@ import lombok.NonNull;
 public class PercentAdditionMonad extends Monad<DoubleSupplier, DoubleSupplier> {
 
     public PercentAdditionMonad(@NonNull String additionParamName) {
-        super(
-                getDefaultInfo(),
-                x -> true,
-                new Class[]{Number.class},
-                new String[]{additionParamName});
-    }
-
-    private static MonadInformation<DoubleSupplier, DoubleSupplier> getDefaultInfo() {
-        MonadInformation info = new MonadInformation(Traits.infoOnly(DoubleSupplier.class), Optional.of(DoubleSupplier.class), Optional.of(DoubleSupplier.class));
-        return info;
+        super(DoubleSupplier.class, DoubleSupplier.class, Number.class, additionParamName);
     }
 
     /**

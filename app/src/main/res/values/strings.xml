@@ -116,6 +116,25 @@ SimpleFlatMapper (www.simpleflatmapper.org)
 SLF4J (www.slf4j.org)"
     </string>
     <string name="hint_autocomplete">Tap one of the options below to build the amount. For example, \"amount\" can be used to get started.</string>
+    <string name="button_processes">Processes</string>
+    <string name="monad_per_asset"><![CDATA[per <asset type>]]></string>
+    <string name="hint_per_asset">Multiplies the amount by the number of the given asset. For example, if you have 10 avocados and your selection is \"$2 per avocado\", the resulting amount will be $20.</string>
+    <string name="label_asset">Asset</string>
+    <string name="hint_freemium_bass_diffusion_has_free_adopters">The number of adopters of the product or service who do not pay for content.</string>
+    <string name="hint_freemium_bass_diffusion_has_paying_adopters">The number of adopters of the product or service who pay for content.</string>
+    <string name="hint_freemium_bass_diffusion_has_percent_chance_of_paying_users">Specifies the likelihood with which adopters will pay for features. E.g. if an app has 200 new regular users and 10% pay for features, then 20 users will pay for features while they use the app. </string>
+    <string name="hint_freemium_bass_diffusion_has_adopter_lifespan">Specifies the length of time (in months) that adopters use the product or service on average. E.g. a gaming app is used for two months on average before being uninstalled or no longer used.</string>
+    <string name="hint_freemium_bass_diffusion">
+        A product or service with free and/or paying adopters.
+        Adopters start as \"potential\" adopters, who must be convinced to try the product through ads or through word of mouth.
+        Advertising and word of mouth success rates can be set as can be retention levels.
+        Word of mouth is typically the most effective way of gaining new adopters.
+        REQUIRES: Potential adopters, word-of-mouth conversion, advertising conversion.
+    </string>
+    <string name="hint_freemium_bass_diffusion_has_adopter_retention">Specifies the likelihood that a new adopter will keep using the product after their first try.</string>
+    <string name="hint_freemium_bass_diffusion_has_conversion_from_ads">Specifies the percentage of potential adopters per month who will try it for the first time due to ad exposure.</string>
+    <string name="hint_freemium_bass_diffusion_has_potential_adopters">Specifies potential adopters</string>
+    <string name="hint_freemium_bass_diffusion_has_wom_conversion">WOM conversion</string>
     <string-array name="default_run_duration_array">
         <item>3 months</item>
         <item>6 months</item>

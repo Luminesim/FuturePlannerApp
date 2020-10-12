@@ -3,8 +3,7 @@ package com.luminesim.futureplanner.input;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.EditText;
+import android.widget.CalendarView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,19 +11,19 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.luminesim.futureplanner.R;
 
-import java.util.function.BiFunction;
+import java.util.GregorianCalendar;
 
-import ca.anthrodynamics.indes.lang.ComputableMonad;
-import ca.anthrodynamics.indes.lang.Monad;
-
-public class NumericAmountInputFragment extends AlertDialogFragment {
+/**
+ *
+ */
+public class AssetSelectionFragment extends AlertDialogFragment {
 
     private View toStart;
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        toStart = getActivity().getLayoutInflater().inflate(R.layout.fragment_numeric_amount_input, null);
+        toStart = getActivity().getLayoutInflater().inflate(R.layout.fragment_asset_type_input, null);
         return new AlertDialog.Builder(getContext())
                 .setView(toStart)
                 .setPositiveButton(R.string.button_save, (d, which) -> {
@@ -34,9 +33,4 @@ public class NumericAmountInputFragment extends AlertDialogFragment {
                 })
                 .create();
     }
-
-    public static ComputableMonad makeComputable(Monad template, View inputs) {
-        return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
-    }
 }
-

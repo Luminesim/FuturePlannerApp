@@ -29,6 +29,8 @@ import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityFactWithDetails;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.models.Model;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.IsCompleteFreemiumBassDiffusionModel;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.IsPartialFreemiumBassDiffusionModel;
 import com.luminesim.futureplanner.monad.MonadData;
 import com.luminesim.futureplanner.monad.MonadSelectionView;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
@@ -60,7 +62,7 @@ public class FactEntryActivity extends AppCompatActivity {
     private long mFactUid;
     private Category mCategory;
     private FeatureManager mFeatures;
-    private List<Class<?>> mTargetClasses = Arrays.asList(Rate.class, OneOffAmount.class);
+    private List<Class<?>> mTargetClasses = new ArrayList<>(Arrays.asList(Rate.class, OneOffAmount.class));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,8 @@ public class FactEntryActivity extends AppCompatActivity {
         // Data setup.
         recyclerView = (RecyclerView) findViewById(R.id.predictive_option_list);
         mEntities = new EntityRepository(getApplicationContext());
-        mCategory = Category.valueOf(getIntent().getStringExtra(EXTRA_DATA_CATEGORY));
+        String dataCategory = getIntent().getStringExtra(EXTRA_DATA_CATEGORY);
+        mCategory = Category.valueOf(dataCategory);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -208,7 +211,8 @@ public class FactEntryActivity extends AppCompatActivity {
         if (mCategory != Category.Income && mCategory != Category.Expenses) {
             try {
                 mTargetClasses.clear();
-                mTargetClasses.add(Class.forName(getIntent().getStringExtra(EXTRA_MODEL_CLASS)));
+                // XXX TODO FIXME READ FROM PKG MGR
+                mTargetClasses.add(IsCompleteFreemiumBassDiffusionModel.class);
             }
             catch (Throwable t) {
                 throw new Error(t);

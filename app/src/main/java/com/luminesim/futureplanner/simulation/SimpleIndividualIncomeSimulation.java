@@ -1,6 +1,7 @@
 package com.luminesim.futureplanner.simulation;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.models.AssetType;
@@ -75,7 +76,7 @@ public class SimpleIndividualIncomeSimulation extends EntityWithFundsSimulation 
 
         // Add one-off events.
         oneOffIncome.forEach(incomeEvent -> {
-            OneOffAmount amount = incomeEvent.apply(Monad.NoInput).as(OneOffAmount.class);
+            OneOffAmount amount = incomeEvent.apply(getBaseTraits()).as(OneOffAmount.class);
             double when = (double) startTime.until(amount.getTime(), ChronoUnit.DAYS);
             if (when >= 0) {
                 root.addEvent(when, e -> sd.updateStock(Funds, old -> old + amount.getAmount().getAsDouble()));
@@ -84,7 +85,7 @@ public class SimpleIndividualIncomeSimulation extends EntityWithFundsSimulation 
 
         // One-off expenses.
         oneOffExpenses.forEach(expenseEvent -> {
-            OneOffAmount amount = expenseEvent.apply(Monad.NoInput).as(OneOffAmount.class);
+            OneOffAmount amount = expenseEvent.apply(getBaseTraits()).as(OneOffAmount.class);
             double when = (double) startTime.until(amount.getTime(), ChronoUnit.DAYS);
             if (when >= 0) {
                 root.addEvent(when, e -> sd.updateStock(Funds, old -> old - amount.getAmount().getAsDouble()));
@@ -95,7 +96,7 @@ public class SimpleIndividualIncomeSimulation extends EntityWithFundsSimulation 
         this.submodels = Model.compose(submodels);
         root.addPopulation("Submodels").addToPopulation(
                 "Submodels",
-                submodels.stream().map(m -> m.asAgents(root.getEngine(), dt)).flatMap(Collection::stream).collect(Collectors.toList())
+                submodels.stream().map(m -> m.asAgents(root.getEngine(), DAY, dt)).flatMap(Collection::stream).collect(Collectors.toList())
         );
     }
 
@@ -117,10 +118,5 @@ public class SimpleIndividualIncomeSimulation extends EntityWithFundsSimulation 
     @Override
     public double getCount(@NonNull AssetType assetType, @NonNull Map<String, Set<Qualifier>> qualifiers) {
         return submodels.getCount(assetType, qualifiers);
-    }
-
-    @Override
-    public Model getRootModel() {
-        return null;
     }
 }

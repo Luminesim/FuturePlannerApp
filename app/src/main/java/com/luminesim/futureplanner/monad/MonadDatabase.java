@@ -9,14 +9,18 @@ import android.widget.EditText;
 import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.input.AlertDialogFragment;
+import com.luminesim.futureplanner.input.AssetSelectionFragment;
 import com.luminesim.futureplanner.input.CalendarInputFragment;
 import com.luminesim.futureplanner.input.NumericAmountInputFragment;
 import com.luminesim.futureplanner.input.PercentInputFragment;
 import com.luminesim.futureplanner.models.ModelView;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.IsPartialFreemiumBassDiffusionModel;
 import com.luminesim.futureplanner.monad.types.CurrencyMonad;
 import com.luminesim.futureplanner.monad.types.OnDateMonad;
+import com.luminesim.futureplanner.monad.types.PerAssetMonad;
 import com.luminesim.futureplanner.monad.types.PercentAdditionMonad;
 import com.luminesim.futureplanner.monad.types.PercentDeductionMonad;
+import com.luminesim.futureplanner.monad.types.SuppliesRootModel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -129,6 +133,51 @@ public final class MonadDatabase {
             @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
         return add(key, monad, validCategories, params -> String.format(formatString, params), predictiveView, hint, inputView, inputProcessor);
     }
+
+    /**
+     * Convenience constructor that uses {@link NumericAmountInputFragment}
+     * to derive a single numeric argument.
+     * @param monad
+     * @param category
+     * @param formatString
+     * @param predictiveView
+     * @param hint
+     * @return
+     */
+    public MonadDatabase addNumericOneParameter(
+            @NonNull String key,
+            @NonNull Monad monad,
+            @NonNull Category category,
+            @NonNull String formatString,
+            @NonNull String predictiveView,
+            @NonNull String hint) {
+        return add(key, monad, Arrays.asList(category), formatString, predictiveView, hint,
+                Optional.of(() -> new NumericAmountInputFragment()),
+                NumericAmountInputFragment::makeComputable);
+    }
+
+    /**
+     * Convenience constructor that uses {@link PercentInputFragment}
+     * to derive a single percent argument.
+     * @param monad
+     * @param category
+     * @param formatString
+     * @param predictiveView
+     * @param hint
+     * @return
+     */
+    public MonadDatabase addPercentOneParameter(
+            @NonNull String key,
+            @NonNull Monad monad,
+            @NonNull Category category,
+            @NonNull String formatString,
+            @NonNull String predictiveView,
+            @NonNull String hint) {
+        return add(key, monad, Arrays.asList(category), formatString, predictiveView, hint,
+                Optional.of(() -> new PercentInputFragment()),
+                PercentInputFragment::makeComputable);
+    }
+
     /**
      * @param key
      * @param monad
@@ -148,6 +197,12 @@ public final class MonadDatabase {
             @NonNull String hint,
             @NonNull Optional<Supplier<AlertDialogFragment>> inputView,
             @NonNull BiFunction<Monad, View, ComputableMonad> inputProcessor) {
+
+        if (mKeys.containsKey(key)) {
+            Log.d(getClass().getName(), "Monad already registered: " + key);
+            return this;
+        }
+
         mRepo.add(monad);
 
         // If key already exists, quit.
@@ -174,7 +229,7 @@ public final class MonadDatabase {
     public List<Monad> getStartingOptions(@NonNull Category currentCategory) {
 
         // Get all valid options that work in this category.
-        return mRepo.getStartingOptions().stream().filter(next -> mCategories.get(getId(next)).contains(currentCategory)).collect(Collectors.toList());
+        return mRepo.getStartingOptions(SuppliesRootModel.class).stream().filter(next -> mCategories.get(getId(next)).contains(currentCategory)).collect(Collectors.toList());
     }
 
     public List<Monad> getNextOptions(@NonNull MonadInformation current, @NonNull Category currentCategory) {
@@ -303,7 +358,7 @@ public final class MonadDatabase {
                     INSTANCE.add(
                             "IdMoneyAmount",
                             new CurrencyMonad(Currency.getInstance("CAD")),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             "$%s",
                             context.getString(R.string.monad_money_view_text),
                             context.getString(R.string.hint_money_amount),
@@ -315,7 +370,7 @@ public final class MonadDatabase {
                     INSTANCE.add(
                             "IdPercentDeduction",
                             new PercentDeductionMonad("Percent"),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             "minus %s%%",
                             context.getString(R.string.moand_percent_deduction),
                             context.getString(R.string.hint_percent_deduction),
@@ -328,7 +383,7 @@ public final class MonadDatabase {
                     INSTANCE.add(
                             "IdPercentAddition",
                             new PercentAdditionMonad("Percent"),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             "plus %s%%",
                             context.getString(R.string.moand_percent_addition),
                             context.getString(R.string.hint_percent_addition),
@@ -339,38 +394,39 @@ public final class MonadDatabase {
                             }
                     );
                     INSTANCE.add("IdPerYear",
-                            new ToRateMonad(1 / 365.0), allCategoriesValid(),
+                            new ToRateMonad(1 / 365.0),
+                            incomeExpensesOnly(),
                             context.getString(R.string.monad_per_year_view_text),
                             context.getString(R.string.monad_per_year_view_text),
                             context.getString(R.string.hint_per_year));
                     INSTANCE.add("IdPerMonth",
                             new ToRateMonad(1 / (365.0 / 12.0)),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             context.getString(R.string.monad_per_month_view_text),
                             context.getString(R.string.monad_per_month_view_text),
                             context.getString(R.string.hint_per_month));
                     INSTANCE.add("IdPerWeek",
                             new ToRateMonad(1 / (365.0 / 52.0)),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             context.getString(R.string.monad_per_week_view_text),
                             context.getString(R.string.monad_per_week_view_text),
                             context.getString(R.string.hint_per_week));
                     INSTANCE.add("IdPerFortnight",
                             new ToRateMonad(1 / (365.0 / 26.0)),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             context.getString(R.string.monad_per_fortnight_view_text),
                             context.getString(R.string.monad_per_fortnight_view_text),
                             context.getString(R.string.hint_per_fortnight));
                     INSTANCE.add("IdPerDay",
                             new ToRateMonad(1.0),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             context.getString(R.string.monad_per_day_view_text),
                             context.getString(R.string.monad_per_day_view_text),
                             context.getString(R.string.hint_per_day));
                     INSTANCE.add(
                             "IdStarting",
                             new StartingMonad("Date"),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             params -> {
                                 LocalDate date = (LocalDate)params[0];
                                 DateTimeFormatter df = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
@@ -388,7 +444,7 @@ public final class MonadDatabase {
                     INSTANCE.add(
                             "IdEnding",
                             new EndingMonad("Date"),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             params -> {
                                 LocalDate date = (LocalDate)params[0];
                                 DateTimeFormatter df = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
@@ -406,7 +462,7 @@ public final class MonadDatabase {
                     INSTANCE.add(
                             "IdOnDate",
                             new OnDateMonad("Date"),
-                            allCategoriesValid(),
+                            incomeExpensesOnly(),
                             params -> {
                                 LocalDateTime raw = (LocalDateTime)params[0];
                                 LocalDate date = raw.toLocalDate();
@@ -422,6 +478,31 @@ public final class MonadDatabase {
                                 return template.withParameters(ld.atTime(0, 0));
                             }
                     );
+                    INSTANCE.add(
+                            "IdPerAsset",
+                            new PerAssetMonad(),
+                            incomeExpensesOnly(),
+                            params -> {
+
+                                String displayString = "per " + params[0].toString();
+                                if (params.length > 1) {
+                                    displayString += Arrays
+                                            .asList(params)
+                                            .subList(1, params.length)
+                                            .stream()
+                                            .map(obj -> obj.toString())
+                                            .collect(Collectors.joining(", ", " (", ")"));
+                                }
+                                return displayString;
+                            },
+                            context.getString(R.string.monad_per_asset),
+                            context.getString(R.string.hint_per_asset),
+                            Optional.of(() -> new AssetSelectionFragment()),
+                            // XXX TODO FIXME
+                            (template, view) -> {
+                                return template.withParameters(((EditText)view.findViewById(R.id.inputAssetType)).getText().toString());
+                            }
+                    );
                 }
             }
         }
@@ -429,8 +510,8 @@ public final class MonadDatabase {
     }
 
     @NotNull
-    public static List<Category> allCategoriesValid() {
-        return Arrays.asList(Category.values());
+    public static List<Category> incomeExpensesOnly() {
+        return Arrays.asList(Category.Income, Category.Expenses);
     }
 
     public void add(@NonNull String id, @NonNull Monad monad, @NonNull List<Category> validCategories, @NonNull String formatter, @NonNull String predictiveView, @NonNull String hint) {

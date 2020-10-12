@@ -5,9 +5,23 @@ import android.os.Bundle;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.luminesim.futureplanner.Category;
 import com.luminesim.futureplanner.R;
 import com.luminesim.futureplanner.db.EntityFact;
 import com.luminesim.futureplanner.db.EntityRepository;
+import com.luminesim.futureplanner.models.ModelPackage;
+import com.luminesim.futureplanner.models.ModelPackageManager;
+import com.luminesim.futureplanner.models.ModelTemplate;
+import com.luminesim.futureplanner.models.bassdiffusion.HasAdopterLifespan;
+import com.luminesim.futureplanner.models.bassdiffusion.HasAdopterRetention;
+import com.luminesim.futureplanner.models.bassdiffusion.HasConversionFromAds;
+import com.luminesim.futureplanner.models.bassdiffusion.HasPotentialAdopters;
+import com.luminesim.futureplanner.models.bassdiffusion.HasSpreadThroughContacts;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.HasFreeAdopters;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.HasPayingAdopters;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.HasPercentChanceOfUsersBecomingPayingUsers;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.IsCompleteFreemiumBassDiffusionModel;
+import com.luminesim.futureplanner.models.bassdiffusion.freemium.IsPartialFreemiumBassDiffusionModel;
 import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.luminesim.futureplanner.purchases.FeatureManager;
@@ -20,9 +34,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 
 public class FactListActivity extends AppCompatActivity {
@@ -35,6 +50,7 @@ public class FactListActivity extends AppCompatActivity {
     private MonadDatabase mData;
     private LinearLayout mList;
     private FeatureManager mFeatures;
+    private Category mCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,13 +60,12 @@ public class FactListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mData = MonadDatabase.getDatabase(this);
 
-
-
         mCategoryTextId = getIntent().getIntExtra(LIST_TITLE, -1);
         if (mCategoryTextId == -1) {
             throw new IllegalStateException("Did not receive a title.");
         }
         getSupportActionBar().setTitle(mCategoryTextId);
+        mCategory = Category.valueOf(getIntent().getStringExtra(LIST_SELECTION));
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -78,10 +93,10 @@ public class FactListActivity extends AppCompatActivity {
                 FeatureSet features = mFeatures.getPurchasedFeatures(false);
                 if (features.isAdvertisingEnabled()) {
                     mAdView.setVisibility(View.VISIBLE);
-                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_with_ads);
+                    ((CoordinatorLayout.LayoutParams) fab.getLayoutParams()).bottomMargin = (int) getResources().getDimension(R.dimen.fab_bottom_padding_with_ads);
                 } else {
                     mAdView.setVisibility(View.GONE);
-                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_without_ads);
+                    ((CoordinatorLayout.LayoutParams) fab.getLayoutParams()).bottomMargin = (int) getResources().getDimension(R.dimen.fab_bottom_padding_without_ads);
                 }
             }
 
@@ -92,15 +107,14 @@ public class FactListActivity extends AppCompatActivity {
                 FeatureSet features = mFeatures.getPurchasedFeatures(false);
                 if (features.isAdvertisingEnabled()) {
                     mAdView.setVisibility(View.VISIBLE);
-                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_with_ads);
+                    ((CoordinatorLayout.LayoutParams) fab.getLayoutParams()).bottomMargin = (int) getResources().getDimension(R.dimen.fab_bottom_padding_with_ads);
                 } else {
                     mAdView.setVisibility(View.GONE);
-                    ((CoordinatorLayout.LayoutParams)fab.getLayoutParams()).bottomMargin = (int)getResources().getDimension(R.dimen.fab_bottom_padding_without_ads);
+                    ((CoordinatorLayout.LayoutParams) fab.getLayoutParams()).bottomMargin = (int) getResources().getDimension(R.dimen.fab_bottom_padding_without_ads);
                 }
             }
         });
     }
-
 
 
     private void updateList() {
@@ -112,7 +126,7 @@ public class FactListActivity extends AppCompatActivity {
                     // Show facts for this category.
                     ewf.getFacts()
                             .stream()
-                            .filter(ef -> ef.getFact().getCategory().name().equals(getString(mCategoryTextId)))
+                            .filter(ef -> ef.getFact().getCategory().equals(mCategory))
                             .sorted(Comparator.comparing(ef -> ef.getFact().getName()))
                             .forEach(ef -> {
                                 EntityFact fact = ef.getFact();
@@ -139,7 +153,8 @@ public class FactListActivity extends AppCompatActivity {
         Intent intent = new Intent(this, FactEntryActivity.class);
         intent.putExtra(getString(R.string.extra_entity_uid), getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
         intent.putExtra(getString(R.string.extra_fact_uid), getIntent().getLongExtra(getString(R.string.extra_fact_uid), factUid));
-        intent.putExtra(FactEntryActivity.EXTRA_DATA_CATEGORY, getString(mCategoryTextId));
+        String categoryName = getIntent().getStringExtra(LIST_SELECTION);
+        intent.putExtra(FactEntryActivity.EXTRA_DATA_CATEGORY, categoryName);
         startActivityForResult(intent, RC_ADD);
     }
 

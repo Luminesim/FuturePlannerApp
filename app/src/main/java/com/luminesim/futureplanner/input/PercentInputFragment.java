@@ -12,6 +12,9 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.luminesim.futureplanner.R;
 
+import ca.anthrodynamics.indes.lang.ComputableMonad;
+import ca.anthrodynamics.indes.lang.Monad;
+
 public class PercentInputFragment extends AlertDialogFragment {
 
     private View toStart;
@@ -44,6 +47,10 @@ public class PercentInputFragment extends AlertDialogFragment {
                 .setNegativeButton(R.string.button_cancel, (d, w) -> {
                 })
                 .create();
+    }
+
+    public static ComputableMonad makeComputable(Monad template, View inputs) {
+        return template.withParameters(Double.valueOf(((EditText) inputs.findViewById(R.id.inputNumber)).getText().toString()));
     }
 }
 

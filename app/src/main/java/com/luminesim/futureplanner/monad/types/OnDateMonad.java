@@ -15,8 +15,6 @@ import lombok.NonNull;
  */
 public class OnDateMonad extends Monad<DoubleSupplier, OneOffAmount> {
 
-    public static final String PROPERTY_HAS_DATE = "com.luminesim.futureplanner.PROPERTY_HAS_DATE";
-
     public OnDateMonad(@NonNull String localDateName) {
         super(
                 getDefaultInfo(),

@@ -10,21 +10,17 @@ import ca.anthrodynamics.indes.lang.MonadInformation;
 import ca.anthrodynamics.indes.lang.Traits;
 import lombok.NonNull;
 
-public class CurrencyMonad extends Monad<Monad.None, MonetaryAmount> {
+public class CurrencyMonad extends Monad<SuppliesRootModel, MonetaryAmount> {
 
     public static String INFO_CURRENCY_CODE = "com.luminesim.futureplanner.INFO_CURRENCY_CODE";
 
     public CurrencyMonad(@NonNull Currency currency) {
         super(
-                getDefaultInfo(currency),
-                x -> true,
-                new Class[]{Number.class},
-                new String[]{currency.getCurrencyCode()});
-    }
-
-    private static MonadInformation<None, MonetaryAmount> getDefaultInfo(Currency currency) {
-        MonadInformation info = new MonadInformation(Traits.infoOnly(MonetaryAmount.class), Optional.of(None.class), Optional.of(MonetaryAmount.class));
-        return info;
+                SuppliesRootModel.class,
+                MonetaryAmount.class,
+                Number.class,
+                currency.getCurrencyCode()
+        );
     }
 
     /**
@@ -36,10 +32,10 @@ public class CurrencyMonad extends Monad<Monad.None, MonetaryAmount> {
     @Override
     protected Traits apply(Traits in, Object[] params) {
         // Assign the money value.
-        return Traits.from(new MonetaryAmount() {
+        return in.andThen(new MonetaryAmount() {
             @Override
             public Currency getCurrency() {
-                return Currency.getInstance((String)getParameterValues()[0]);
+                return Currency.getInstance((String) getParameterValues()[0]);
             }
 
             @Override

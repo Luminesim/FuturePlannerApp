@@ -8,10 +8,14 @@ import com.luminesim.futureplanner.db.EntityFactDetail;
 import com.luminesim.futureplanner.db.EntityRepository;
 import com.luminesim.futureplanner.db.EntityWithFacts;
 import com.luminesim.futureplanner.models.Model;
+import com.luminesim.futureplanner.models.ModelSupplier;
 import com.luminesim.futureplanner.models.ModelView;
 import com.luminesim.futureplanner.monad.MonadDatabase;
 import com.luminesim.futureplanner.monad.types.IncomeType;
 import com.luminesim.futureplanner.monad.types.OneOffAmount;
+import com.luminesim.futureplanner.monad.types.SuppliesRootModel;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import ca.anthrodynamics.indes.Engine;
 import ca.anthrodynamics.indes.abm.Agent;
@@ -150,15 +155,12 @@ public abstract class EntityWithFundsSimulation implements Runnable, ModelView {
                         default:
                             throw new Error("Unhandled fact category: " + fact.getFact().getCategory());
                     }
-                } else if (action.getInfo().getProperties().canDuckTypeAs(Model.class)) {
-                    submodels.add(action.apply(ComputableMonad.NoInput).as(Model.class));
+                } else if (action.getInfo().getProperties().canDuckTypeAs(ModelSupplier.class)) {
+                    submodels.add(action.apply(getBaseTraits()).as(ModelSupplier.class).get());
                 } else {
                     throw new Error("Unhandled income/expense type: " + action.getInfo().getProperties());
                 }
             });
-
-            // Give each model access to the global view.
-            submodels.forEach(model -> model.setRootModel(this));
 
             // Build the simulation.
             // NOTE: DT MUST BE EVEN -- SEE BELOW.
@@ -229,7 +231,7 @@ public abstract class EntityWithFundsSimulation implements Runnable, ModelView {
 
         double sum = 0;
         for (ComputableMonad flow : subFlows) {
-            Traits result = flow.apply(ComputableMonad.NoInput);
+            Traits result = flow.apply(getBaseTraits());
             Rate rate = result.as(Rate.class);
             boolean isAtOrAfterStart = true;
             boolean isAtOrBeforeEnd = true;
@@ -248,5 +250,10 @@ public abstract class EntityWithFundsSimulation implements Runnable, ModelView {
             }
         }
         return sum;
+    }
+
+    @NotNull
+    protected Traits getBaseTraits() {
+        return Traits.from((SuppliesRootModel)() -> this);
     }
 }

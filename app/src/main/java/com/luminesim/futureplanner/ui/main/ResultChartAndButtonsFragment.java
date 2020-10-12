@@ -357,7 +357,7 @@ public class ResultChartAndButtonsFragment extends Fragment {
             container.findViewById(R.id.buttonIncome).setOnClickListener(view -> {
                 Intent intent = new Intent(getContext(), FactListActivity.class);
                 intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_income);
-                intent.putExtra(FactListActivity.LIST_SELECTION, Category.Income);
+                intent.putExtra(FactListActivity.LIST_SELECTION, Category.Income.toString());
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
                 startActivityForResult(intent, RC_FACT_LIST);
             });
@@ -365,7 +365,15 @@ public class ResultChartAndButtonsFragment extends Fragment {
             container.findViewById(R.id.buttonExpenses).setOnClickListener(view -> {
                 Intent intent = new Intent(getContext(), FactListActivity.class);
                 intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_expenses);
-                intent.putExtra(FactListActivity.LIST_SELECTION, Category.Expenses);
+                intent.putExtra(FactListActivity.LIST_SELECTION, Category.Expenses.toString());
+                intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
+                startActivityForResult(intent, RC_FACT_LIST);
+            });
+
+            container.findViewById(R.id.buttonProcesses).setOnClickListener(view -> {
+                Intent intent = new Intent(getContext(), FactListActivity.class);
+                intent.putExtra(FactListActivity.LIST_TITLE, R.string.button_processes);
+                intent.putExtra(FactListActivity.LIST_SELECTION, Category.ModelDefinition.toString());
                 intent.putExtra(getString(R.string.extra_entity_uid), getActivity().getIntent().getLongExtra(getString(R.string.extra_entity_uid), 0l));
                 startActivityForResult(intent, RC_FACT_LIST);
             });

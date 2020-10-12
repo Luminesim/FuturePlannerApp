@@ -26,6 +26,10 @@ import lombok.NonNull;
 @Getter
 @AllArgsConstructor
 public class ModelPackage {
+
+    @NonNull
+    private final String id;
+
     /**
      * The model type that any valid statement sequence or template must produce.
      */
